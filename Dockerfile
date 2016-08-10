@@ -7,6 +7,13 @@ WORKDIR /nodeApp
 # ---------------- #
 #   Installation   #
 # ---------------- #
+RUN apt-get update
+RUN apt-get install -y git libsqlite3-0 libfontconfig1
+
+
+RUN git clone --depth 1 https://github.com/astefanutti/decktape.git
+ADD http://astefanutti.github.io/decktape/downloads/phantomjs-linux-ubuntu16-x86-64 ./decktape/bin/phantomjs
+RUN chmod 700 ./decktape/bin/phantomjs
 
 ADD ./application/package.json ./
 RUN npm install --production
@@ -17,7 +24,7 @@ ADD ./application/ ./
 #   Configuration   #
 # ----------------- #
 
-EXPOSE 80
+EXPOSE 3000
 
 # ----------- #
 #   Cleanup   #

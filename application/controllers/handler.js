@@ -5,46 +5,60 @@ Handles the requests by executing stuff and replying to the client. Uses promise
 'use strict';
 
 const boom = require('boom'), //Boom gives us some predefined http codes and proper responses
-  slideDB = require('../database/slideDatabase'), //Database functions specific for slides
-  co = require('../common');
+  //slideDB = require('../database/slideDatabase'), //Database functions specific for slides
+  co = require('../common'),
+  fs = require('fs'),
+  crypto = require('crypto'),
+  spawn = require('child_process').spawn;
 
 module.exports = {
-  //Get slide from database or return NOT FOUND
-  getSlide: function(request, reply) {
-    slideDB.get(encodeURIComponent(request.params.id)).then((slide) => {
-      if (co.isEmpty(slide))
-        reply(boom.notFound());
-      else
-        reply(co.rewriteID(slide));
-    }).catch((error) => {
-      request.log('error', error);
-      reply(boom.badImplementation());
-    });
-  },
+  //Get PDF from URL or return NOT FOUND
+  getPDF: function(request, reply) {
+  var md5sum = crypto.createHash('md5');
+    md5sum.update(request.params.url);
+    let filename = md5sum.digest('base64') + '.pdf';
 
-  //Create Slide with new id and payload or return INTERNAL_SERVER_ERROR
-  newSlide: function(request, reply) {
-    slideDB.insert(request.payload).then((inserted) => {
-      if (co.isEmpty(inserted.ops[0]))
-        throw inserted;
-      else
-        reply(co.rewriteID(inserted.ops[0]));
-    }).catch((error) => {
-      request.log('error', error);
-      reply(boom.badImplementation());
-    });
-  },
+    let command = request.query.command ? request.query.command : 'reveal';
+    let url = request.params.url;
+    let size = request.query.slideSize ? request.query.slideSize : '';
+    let slides = request.query.slides ? request.query.slides : '';
+    let outputFilename = request.query.pdf ? request.query.pdf : filename;
+    let decktapeArgs = ['decktape/decktape.js'];
+    if ( size != '') {
+      decktapeArgs.push('--size', size);
+    }
+    if (slides != '') {
+      decktapeArgs.push('--slides', slides);
+    }
+    decktapeArgs.push('-p', '0');
+    decktapeArgs.push(command);
+    decktapeArgs.push(url);
+    decktapeArgs.push(filename);
 
-  //Update Slide with id id and payload or return INTERNAL_SERVER_ERROR
-  replaceSlide: function(request, reply) {
-    slideDB.replace(encodeURIComponent(request.params.id), request.payload).then((replaced) => {
-      if (co.isEmpty(replaced.value))
-        throw replaced;
-      else
-        reply(replaced.value);
-    }).catch((error) => {
-      request.log('error', error);
-      reply(boom.badImplementation());
+    let decktape = spawn('decktape/bin/phantomjs', decktapeArgs);
+    console.log(decktapeArgs);
+    decktape.stdout.on('data', (data) => {
+      console.log(`stdout: ${data}`);
     });
+
+    decktape.stderr.on('data', (data) => {
+      console.log(`stderr: ${data}`);
+    });
+
+    decktape.on('close', (code) => {
+      reply.file(filename).header('Content-Disposition', 'attachment; filename=' + outputFilename).header('Content-Type', 'application/pdf');
+    });
+
   },
+  getPDFEnd : function(request) {
+    if (request.params.url) {
+      let url = request.params.url;
+      if (request.path.includes('exportPDF')) {
+        let md5sum = crypto.createHash('md5');
+        md5sum.update(url);
+        let filename = md5sum.digest('base64') + '.pdf';
+        fs.unlinkSync(filename);
+      }
+    }
+  }
 };

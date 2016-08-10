@@ -8,68 +8,29 @@ const Joi = require('joi'),
   handlers = require('./controllers/handler');
 
 module.exports = function(server) {
-  //Get slide with id id from database and return it (when not available, return NOT FOUND). Validate id
+  //Get presentation from URL and return it as a PDF. Validate url
   server.route({
     method: 'GET',
-    path: '/slide/{id}',
-    handler: handlers.getSlide,
+    path: '/exportPDF/{url}',
+    handler: handlers.getPDF,
     config: {
       validate: {
         params: {
-          id: Joi.string().alphanum().lowercase()
+          url : Joi.string().uri().required().description('Reveal presentation URL')
         },
+        query: {
+          command : Joi.string().valid('automatic', 'bespoke', 'csss', 'deck', 'dzslides', 'flowtime', 'generic', 'impress', 'remark', 'reveal', 'shower', 'slide').description('Decktape slide format plugin'),
+          size : Joi.string().regex(/^[0-9]+x[0-9]+$/).description('Resolution for exported slides'),
+          slides : Joi.string().regex(/^[0-9]+(?:-[0-9]+)?(?:,[0-9]+(?:-[0-9]+)?)*$/).description('Selection of slides to export'),
+          pdf : Joi.string().regex(/^[a-zA-Z0-9_\-,]+\.pdf$/).description('Name of exported file')
+        }
       },
       tags: ['api'],
-      description: 'Get a slide'
+      description: 'Export the reveal.js presentation at {url} as a PDF.'
     }
   });
 
-  //Create new slide (by payload) and return it (...). Validate payload
-  server.route({
-    method: 'POST',
-    path: '/slide/new',
-    handler: handlers.newSlide,
-    config: {
-      validate: {
-        payload: Joi.object().keys({
-          title: Joi.string(),
-          body: Joi.string(),
-          user_id: Joi.string().alphanum().lowercase(),
-          root_deck_id: Joi.string().alphanum().lowercase(),
-          parent_deck_id: Joi.string().alphanum().lowercase(),
-          no_new_revision: Joi.boolean(),
-          position: Joi.number().integer().min(0),
-          language: Joi.string()
-        }).requiredKeys('title', 'body'),
-      },
-      tags: ['api'],
-      description: 'Create a new slide'
-    }
-  });
-
-  //Update slide with id id (by payload) and return it (...). Validate payload
-  server.route({
-    method: 'PUT',
-    path: '/slide/{id}',
-    handler: handlers.replaceSlide,
-    config: {
-      validate: {
-        params: {
-          id: Joi.string().alphanum().lowercase()
-        },
-        payload: Joi.object().keys({
-          title: Joi.string(),
-          body: Joi.string(),
-          user_id: Joi.string().alphanum().lowercase(),
-          root_deck_id: Joi.string().alphanum().lowercase(),
-          parent_deck_id: Joi.string().alphanum().lowercase(),
-          no_new_revision: Joi.boolean(),
-          position: Joi.number().integer().min(0),
-          language: Joi.string()
-        }).requiredKeys('title', 'body'),
-      },
-      tags: ['api'],
-      description: 'Replace a slide'
-    }
+  server.on('tail', function(request) {
+    return handlers.getPDFEnd(request);
   });
 };
