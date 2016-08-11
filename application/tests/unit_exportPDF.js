@@ -4,8 +4,8 @@
 //Mocking is missing completely TODO add mocked objects
 
 describe.skip('PDF', () => {
-  it("exportPDF", function() {
-    throw new Error("fail");
+  it('exportPDF', function() {
+    throw new Error('fail');
   });
   /*let server;
 
