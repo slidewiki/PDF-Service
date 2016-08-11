@@ -1,0 +1,8 @@
+template:
+  image: slidewiki/pdfservice
+  restart: on-failure:5
+  expose:
+    - "80"
+  environment:
+    - APPLICATION_PORT=80
+    - VIRTUAL_HOST=pdfservice.manfredfris.ch
