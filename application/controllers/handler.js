@@ -14,7 +14,7 @@ const boom = require('boom'), //Boom gives us some predefined http codes and pro
 module.exports = {
   //Get PDF from URL or return NOT FOUND
   getPDF: function(request, reply) {
-  var md5sum = crypto.createHash('md5');
+    var md5sum = crypto.createHash('md5');
     md5sum.update(request.params.url);
     let filename = md5sum.digest('base64') + '.pdf';
 
@@ -24,10 +24,10 @@ module.exports = {
     let slides = request.query.slides ? request.query.slides : '';
     let outputFilename = request.query.pdf ? request.query.pdf : filename;
     let decktapeArgs = ['decktape/decktape.js'];
-    if ( size != '') {
+    if ( size !== '') {
       decktapeArgs.push('--size', size);
     }
-    if (slides != '') {
+    if ( slides !== '') {
       decktapeArgs.push('--slides', slides);
     }
     decktapeArgs.push('-p', '0');
