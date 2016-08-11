@@ -1,8 +1,6 @@
 pdfservice:
   image: slidewiki/pdfservice
   restart: on-failure:5
-  ports:
-    - "80:80"
   expose:
     - "80"
   environment:
