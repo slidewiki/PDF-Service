@@ -30,7 +30,6 @@ module.exports = {
     if ( slides !== '') {
       decktapeArgs.push('--slides', slides);
     }
-    decktapeArgs.push('-p', '0');
     decktapeArgs.push(command);
     decktapeArgs.push(url);
     decktapeArgs.push(filename);
