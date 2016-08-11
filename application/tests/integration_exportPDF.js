@@ -15,36 +15,22 @@ describe('REST API', () => {
     server = new hapi.Server();
     server.connection({
       host: 'localhost',
-      port: 3000
+      port: 80
     });
     require('../routes.js')(server);
     done();
   });
 
-  let slide = {
-    title: 'Dummy',
-    body: 'dummy',
-    language: 'en'
-  };
   let options = {
-    method: 'POST',
-    url: '/slide/new',
-    payload: slide,
-    headers: {
-      'Content-Type': 'application/json'
-    }
+    method: 'GET',
+    url: '/exportPDF/http%3A%2F%2Fartificer.jboss.org%2Fslides%2Fgeneral%2Fopensource-getting-involved.html',
   };
 
-  context('when creating a slide it', () => {
-    it('should reply it', (done) => {
+  context('when exporting a Reveal presentation it', () => {
+    it('should reply with a PDF', (done) => {
       server.inject(options, (response) => {
-        response.should.be.an('object').and.contain.keys('statusCode','payload');
         response.statusCode.should.equal(200);
-        response.payload.should.be.a('string');
-        let payload = JSON.parse(response.payload);
-        payload.should.be.an('object').and.contain.keys('title', 'language');
-        payload.title.should.equal('Dummy');
-        payload.language.should.equal('en');
+        expect(response).to.have.header('Content-Type', 'application/pdf');
         done();
       });
     });
