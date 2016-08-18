@@ -11,15 +11,16 @@ cache:
   directories:
   - "./application/node_modules"
 before_install:
-- if [ "$TRAVIS_BRANCH" == "master" ] ; then ./travis_scripts/install_compose.sh ; fi
+- if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] ; then ./travis_scripts/install_compose.sh ; fi
 - cd application
 script:
 - npm run lint
 after_success:
 - cd ..
+<<<<<<< HEAD
 - openssl aes-256-cbc -K $encrypted_cd8e0a18433b_key -iv $encrypted_cd8e0a18433b_iv -in deployment_keys.tar.enc -out deployment_keys.tar -d
-- if [ "$TRAVIS_BRANCH" == "master" ] ; then ./travis_scripts/dockerhub.sh ; fi
-- if [ "$TRAVIS_BRANCH" == "master" ] ; then ./travis_scripts/deploy.sh ; fi
+- if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] ; then ./travis_scripts/dockerhub.sh ; fi
+- if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] ; then ./travis_scripts/deploy.sh ; fi
 - cd application
 after_script:
 - npm run coverall
