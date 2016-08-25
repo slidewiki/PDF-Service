@@ -23,9 +23,9 @@ module.exports = {
     let offset = request.query.offset ? 'offset=' + request.query.offset : '';
     if (limit !== '' && offset !== '') {
       req_path += '?' + limit + '&' + offset;
-    } else if (limit != '') {
+    } else if (limit !== '') {
       req_path += '?' + limit;
-    } else if (offset != '') {
+    } else if (offset !== '') {
       req_path += '?' + offset;
     }
     req_path = 'http://deckservice.manfredfris.ch' + req_path;
@@ -35,7 +35,7 @@ module.exports = {
       let deckTree = JSON.parse(body);
       //console.log(deckTree);
       let slides = [];
-      if (deckTree != '') {
+      if (deckTree !== '') {
         //console.log('deckTree is non-empty: ' + deckTree.children.length);
         for (let i = 0; i < deckTree.children.length; i++) {
           let slide = deckTree.children[i];
@@ -85,7 +85,7 @@ module.exports = {
           '</script>' +
           '</body>' +
           '</html>';
-        }
+      }
       //console.log('revealSlides: ' + revealSlides);
       //console.log(revealSlides);
       reply(revealSlides);
