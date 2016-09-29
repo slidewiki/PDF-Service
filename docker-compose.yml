@@ -5,4 +5,4 @@ pdfservice:
     - "80"
   environment:
     - APPLICATION_PORT=80
-    - VIRTUAL_HOST=pdfservice.manfredfris.ch
+    - VIRTUAL_HOST=pdfservice.experimental.slidewiki.org
