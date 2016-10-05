@@ -8,15 +8,15 @@ const Joi = require('joi'),
   handlers = require('./controllers/handler');
 
 module.exports = function(server) {
-  //Get presentation from URL and return it as a PDF. Validate url
+
   server.route({
     method: 'GET',
-    path: '/exportPDF/{url}',
+    path: '/exportPDF/{id}',
     handler: handlers.getPDF,
     config: {
       validate: {
         params: {
-          url : Joi.string().uri().required().description('Reveal presentation URL')
+          id : Joi.string().regex(/^[0-9]+$/).required().description('SlideWiki deck id')
         },
         query: {
           command : Joi.string().valid('automatic', 'bespoke', 'csss', 'deck', 'dzslides', 'flowtime', 'generic', 'impress', 'remark', 'reveal', 'shower', 'slide').description('Decktape slide format plugin'),
@@ -26,7 +26,27 @@ module.exports = function(server) {
         }
       },
       tags: ['api'],
-      description: 'Export the reveal.js presentation at {url} as a PDF.'
+      description: 'Export the deck with id {id} as a PDF.'
+    }
+  });
+
+  server.route({
+    method: 'GET',
+    path: '/exportReveal/{id}',
+    handler: handlers.getReveal,
+    config: {
+      validate: {
+        params: {
+          id: Joi.string()
+        },
+        query: {
+          limit: Joi.string().optional(),
+          offset: Joi.string().optional(),
+          fullHTML: Joi.string().optional()
+        }
+      },
+      tags: ['api'],
+      description: 'Export the given deck in Reveal.js format'
     }
   });
 
