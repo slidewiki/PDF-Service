@@ -21,7 +21,7 @@ module.exports = function(server) {
         query: {
           command : Joi.string().valid('automatic', 'bespoke', 'csss', 'deck', 'dzslides', 'flowtime', 'generic', 'impress', 'remark', 'reveal', 'shower', 'slide').description('Decktape slide format plugin'),
           size : Joi.string().regex(/^[0-9]+x[0-9]+$/).description('Resolution for exported slides'),
-          slides : Joi.string().regex(/^[0-9]+(?:-[0-9]+)?(?:,[0-9]+(?:-[0-9]+)?)*$/).description('Selection of slides to export'),
+          slides : Joi.string().regex(/^[0-9]+(?:-[0-9]+)?(?:,[0-9]+(?:-[0-9]+)?)*$/).description('Selection of slides to export. Note that slides are specified by position within the deck, not by SlideWiki slide id.'),
           pdf : Joi.string().regex(/^[a-zA-Z0-9_\-,]+\.pdf$/).description('Name of exported file')
         }
       },
