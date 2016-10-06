@@ -32,7 +32,10 @@
     "hapi-swagger": "^6.2.2",
     "inert": "^4.0.1",
     "joi": "^9.0.4",
-    "vision": "^4.1.0"
+    "vision": "^4.1.0",
+    "request": "^2.75.0",
+    "request-promise": "^4.1.1",
+    "reveal": "^0.0.4"
   },
   "engines": {
     "node": ">=6.0.0"
