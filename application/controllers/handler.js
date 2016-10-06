@@ -33,7 +33,7 @@ module.exports = {
       req_path += '?' + offset;
     }
     req_path = Microservices.deck.uri + req_path;
-    platform_path = Microservices.platform.uri;
+    let platform_path = Microservices.platform.uri;
     //console.log('req_path: ' + req_path);
 
     rp(req_path).then(function(body) {
