@@ -33,7 +33,6 @@ module.exports = {
       req_path += '?' + offset;
     }
     req_path = Microservices.deck.uri + req_path;
-    platform_path = Microservices.platform.uri;
     //console.log('req_path: ' + req_path);
 
     rp(req_path).then(function(body) {
@@ -46,7 +45,7 @@ module.exports = {
           let slide = deckTree.children[i];
           //console.log(slide);
           let speakerNotes = slide.speakerNotes ? '<aside class="notes">' + slide.speakerNotes + '</aside>': '';
-          let content = slide.content + speakerNotes ;
+          let content = slide.title + slide.content + speakerNotes ;
           slides.push('<section key="' + slide.id + '" id="' + slide.id + '">' + content + '</section>');
           //console.log('slide: ' + slides[i]);
 
@@ -56,15 +55,18 @@ module.exports = {
       }
       let defaultCSS = '{' +
         'height: \'100%\',' +
+        'fontSize: \'100%\',' +
         'position: \'absolute\',' +
         'top: \'0\',' +
+        '//backgroundColor: \'#ffffff\',' +
+        'zindex: \'1000\'' +
       '}';
       let revealSlides = '';
       if (request.query.fullHTML) {
         revealSlides += '<html>\n' +
         '<head>\n' +
-        '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/reveal.css">\n' +
-        '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/theme/white.css">\n' +
+        '<link rel="stylesheet" href="http://lab.hakim.se/reveal-js/css/reveal.css">\n' +
+        '<link rel="stylesheet" href="http://lab.hakim.se/reveal-js/css/theme/white.css">\n' +
         '</head>\n' +
         '<body>\n';
       }
@@ -81,7 +83,7 @@ module.exports = {
         '          <br style={clear: \'both\'}/>' +
         '        </div>';
       if (request.query.fullHTML) {
-        revealSlides += '<script src="' + platform_path +'/custom_modules/reveal.js/js/reveal.js"></script>' +
+        revealSlides += '<script src="http://lab.hakim.se/reveal-js/js/reveal.js"></script>' +
           '<script>' +
           '    Reveal.initialize();' +
           '</script>' +
