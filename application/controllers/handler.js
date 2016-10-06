@@ -33,6 +33,7 @@ module.exports = {
       req_path += '?' + offset;
     }
     req_path = Microservices.deck.uri + req_path;
+    platform_path = Microservices.platform.uri;
     //console.log('req_path: ' + req_path);
 
     rp(req_path).then(function(body) {
@@ -62,8 +63,8 @@ module.exports = {
       if (request.query.fullHTML) {
         revealSlides += '<html>\n' +
         '<head>\n' +
-        '<link rel="stylesheet" href="http://platform.experimental.slidewiki.org/custom_modules/reveal.js/css/reveal.css">\n' +
-        '<link rel="stylesheet" href="http://platform.experimental.slidewiki.org/custom_modules/reveal.js/css/theme/white.css">\n' +
+        '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/reveal.css">\n' +
+        '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/theme/white.css">\n' +
         '</head>\n' +
         '<body>\n';
       }
@@ -80,7 +81,7 @@ module.exports = {
         '          <br style={clear: \'both\'}/>' +
         '        </div>';
       if (request.query.fullHTML) {
-        revealSlides += '<script src="http://platform.experimental.slidewiki.org/custom_modules/reveal.js/js/reveal.js"></script>' +
+        revealSlides += '<script src="' + platform_path +'/custom_modules/reveal.js/js/reveal.js"></script>' +
           '<script>' +
           '    Reveal.initialize();' +
           '</script>' +
