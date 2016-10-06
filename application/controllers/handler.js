@@ -62,8 +62,8 @@ module.exports = {
       if (request.query.fullHTML) {
         revealSlides += '<html>\n' +
         '<head>\n' +
-        '<link rel="stylesheet" href="/custom_modules/reveal.js/css/reveal.css">\n' +
-        '<link rel="stylesheet" href="/custom_modules/reveal.js/css/theme/white.css">\n' +
+        '<link rel="stylesheet" href="http://platform.experimental.slidewiki.org/custom_modules/reveal.js/css/reveal.css">\n' +
+        '<link rel="stylesheet" href="http://platform.experimental.slidewiki.org/custom_modules/reveal.js/css/theme/white.css">\n' +
         '</head>\n' +
         '<body>\n';
       }
@@ -80,7 +80,7 @@ module.exports = {
         '          <br style={clear: \'both\'}/>' +
         '        </div>';
       if (request.query.fullHTML) {
-        revealSlides += '<script src="/custom_modules/reveal.js/js/reveal.js"></script>' +
+        revealSlides += '<script src="http://platform.experimental.slidewiki.org/custom_modules/reveal.js/js/reveal.js"></script>' +
           '<script>' +
           '    Reveal.initialize();' +
           '</script>' +
