@@ -6,3 +6,4 @@ pdfservice:
   environment:
     - APPLICATION_PORT=80
     - VIRTUAL_HOST=pdfservice.experimental.slidewiki.org
+    - SERVICE_URL_PLATFORM=http://platform.experimental.slidewiki.org
