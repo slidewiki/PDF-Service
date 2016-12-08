@@ -35,7 +35,9 @@
     "vision": "^4.1.0",
     "request": "^2.75.0",
     "request-promise": "^4.1.1",
-    "reveal": "^0.0.4"
+    "reveal": "^0.0.4",
+    "adm-zip": "^0.4.7",
+    "website-scraper":"^1.2.2"
   },
   "engines": {
     "node": ">=6.0.0"

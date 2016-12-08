@@ -13,12 +13,63 @@ const boom = require('boom'), //Boom gives us some predefined http codes and pro
   rp = require('request-promise'),
   http_request = require('request'),
   Microservices = require('../configs/microservices'),
+  zip = require('adm-zip'),
   http = require('http');//,
   //Reveal = require('reveal');
 
 
 
 module.exports = {
+
+  getOfflineHTML: function(request, reply) {
+    let req_path = '/exportReveal/' + request.params.id + '?fullHTML=true';
+    req_path = Microservices.pdf.uri + req_path;
+    console.log(req_path);
+    var scraper = require('website-scraper');
+
+    scraper.scrape({
+      urls: [
+        req_path
+        //{url: 'http://nodejs.org/about', filename: 'about.html'},
+      ],
+      directory: 'exportedHTMLOffline',
+      subdirectories: [
+        {directory: 'img', extensions: ['.jpg', '.png', '.svg']},
+        {directory: 'js', extensions: ['.js']},
+        {directory: 'css', extensions: ['.css']}
+      ],
+      sources: [
+        {selector: 'img', attr: 'src'},
+        {selector: 'link[rel="stylesheet"]', attr: 'href'},
+        {selector: 'script', attr: 'src'}
+      ]
+      /*,
+      request: {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 4 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19'
+        }
+      }
+      */
+    }).then(function (result) {
+      console.log(result);
+      let zipFile = new zip();
+      zipFile.addLocalFolder('exportedHTMLOffline');
+      let filename = 'slidewiki-deck-' + request.params.id + '.zip';
+      zipFile.writeZip(filename);
+      reply.file(filename).header('Content-Disposition', 'attachment; filename=' + filename).header('Content-Type', 'application/zip');
+    }).catch(function(err){
+      console.log(err);
+    });
+
+
+
+/*
+    rp(req_path).then(function(body)) {
+
+    };
+*/
+  },
+
   // Get given deck as reveal.js, or return NOT FOUND
   getReveal: function(request, reply) {
     //console.log('In getReveal');
@@ -149,6 +200,14 @@ module.exports = {
         let filename = 'slidewiki-deck-' + id + '.pdf';//md5sum.digest('base64') + '.pdf';
         fs.unlinkSync(filename);
       }
+      if (request.path.includes('exportHTMLOffline')) {
+        //let md5sum = crypto.createHash('md5');
+        //md5sum.update(url);
+        let filename = 'slidewiki-deck-' + id + '.zip';//md5sum.digest('base64') + '.pdf';
+        fs.unlinkSync(filename);
+        fs.unlinkSync('exportedHTMLOffline')
+      }
     }
   }
+
 };

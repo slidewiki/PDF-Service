@@ -32,6 +32,21 @@ module.exports = function(server) {
 
   server.route({
     method: 'GET',
+    path: '/exportOfflineHTML/{id}',
+    handler: handlers.getOfflineHTML,
+    config: {
+      validate: {
+        params: {
+          id : Joi.string().regex(/^[0-9]+$/).required().description('SlideWiki deck id')
+        }
+      },
+      tags: ['api'],
+      description: 'Export the deck with id {id} as an offline HTML bundle.'
+    }
+  });
+
+  server.route({
+    method: 'GET',
     path: '/exportReveal/{id}',
     handler: handlers.getReveal,
     config: {
