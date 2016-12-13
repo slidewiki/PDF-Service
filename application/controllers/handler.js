@@ -229,7 +229,7 @@ module.exports = {
         //md5sum.update(url);
         let filename = 'slidewiki-deck-' + id + '.zip';//md5sum.digest('base64') + '.pdf';
         fs.unlinkSync(filename);
-        fs.removeSync('exportedOfflineHTML-' + id)
+        fs.removeSync('exportedOfflineHTML-' + id);
       }
       if (request.path.includes('exportEPub')) {
         let filename = 'slidewiki-deck-' + id + '.epub';
