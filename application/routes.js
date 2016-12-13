@@ -47,6 +47,21 @@ module.exports = function(server) {
 
   server.route({
     method: 'GET',
+    path: '/exportEPub/{id}',
+    handler: handlers.getEPub,
+    config: {
+      validate: {
+        params: {
+          id : Joi.string().regex(/^[0-9]+$/).required().description('SlideWiki deck id')
+        }
+      },
+      tags: ['api'],
+      description: 'Export the deck with id {id} as an ePub 3 file.'
+    }
+  });
+
+  server.route({
+    method: 'GET',
     path: '/exportReveal/{id}',
     handler: handlers.getReveal,
     config: {

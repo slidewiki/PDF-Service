@@ -7,13 +7,15 @@ Handles the requests by executing stuff and replying to the client. Uses promise
 const boom = require('boom'), //Boom gives us some predefined http codes and proper responses
   //slideDB = require('../database/slideDatabase'), //Database functions specific for slides
   co = require('../common'),
-  fs = require('fs'),
+  fs = require('fs-extra'),
   crypto = require('crypto'),
   spawn = require('child_process').spawn,
   rp = require('request-promise'),
   http_request = require('request'),
   Microservices = require('../configs/microservices'),
   zip = require('adm-zip'),
+  ePub = require('epub-gen'),
+  scraper = require('website-scraper'),
   http = require('http');//,
   //Reveal = require('reveal');
 
@@ -25,14 +27,13 @@ module.exports = {
     let req_path = '/exportReveal/' + request.params.id + '?fullHTML=true';
     req_path = Microservices.pdf.uri + req_path;
     console.log(req_path);
-    var scraper = require('website-scraper');
 
     scraper.scrape({
       urls: [
         req_path
         //{url: 'http://nodejs.org/about', filename: 'about.html'},
       ],
-      directory: 'exportedHTMLOffline',
+      directory: 'exportedOfflineHTML-' + request.params.id,
       subdirectories: [
         {directory: 'img', extensions: ['.jpg', '.png', '.svg']},
         {directory: 'js', extensions: ['.js']},
@@ -43,18 +44,13 @@ module.exports = {
         {selector: 'link[rel="stylesheet"]', attr: 'href'},
         {selector: 'script', attr: 'src'}
       ]
-      /*,
-      request: {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 4 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19'
-        }
-      }
-      */
+
     }).then(function (result) {
       console.log(result);
-      let zipFile = new zip();
-      zipFile.addLocalFolder('exportedHTMLOffline');
       let filename = 'slidewiki-deck-' + request.params.id + '.zip';
+      let folderName = 'exportedOfflineHTML-' + request.params.id;
+      let zipFile = new zip();
+      zipFile.addLocalFolder(folderName);
       zipFile.writeZip(filename);
       reply.file(filename).header('Content-Disposition', 'attachment; filename=' + filename).header('Content-Type', 'application/zip');
     }).catch(function(err){
@@ -63,11 +59,39 @@ module.exports = {
 
 
 
-/*
-    rp(req_path).then(function(body)) {
 
-    };
-*/
+  },
+  getEPub: function(request, reply) {
+    let req_path = '/deck/' + request.params.id + '/slides';
+    req_path = Microservices.deck.uri + req_path;
+
+    rp(req_path).then(function(body) {
+      let deckTree = JSON.parse(body);
+      let slides = [];
+      if (deckTree !== '') {
+        //console.log('deckTree is non-empty: ' + deckTree.children.length);
+        for (let i = 0; i < deckTree.children.length; i++) {
+          let slide = deckTree.children[i];
+          slideContent = {
+            data: slide.content
+          };
+          slides.push(slideContent);
+        }
+      }
+      var option = {
+        title: 'SlideWiki Deck ' + request.params.id, // *Required, title of the book.
+        author: 'SlideWiki McSlideWikiFace', // *Required, name of the author.
+        content: slides
+      };
+      let filename = 'slidewiki-deck-' + request.params.id + '.epub';
+
+      new ePub(option, filename).then(function() {
+        reply.file(filename).header('Content-Disposition', 'attachment; filename=' + filename).header('Content-Type', 'application/epub+zip');
+      }, function(err) {
+        request.log(err);
+        reply(boom.badImplementation());
+      });
+    });
   },
 
   // Get given deck as reveal.js, or return NOT FOUND
@@ -200,12 +224,16 @@ module.exports = {
         let filename = 'slidewiki-deck-' + id + '.pdf';//md5sum.digest('base64') + '.pdf';
         fs.unlinkSync(filename);
       }
-      if (request.path.includes('exportHTMLOffline')) {
+      if (request.path.includes('exportOfflineHTML')) {
         //let md5sum = crypto.createHash('md5');
         //md5sum.update(url);
         let filename = 'slidewiki-deck-' + id + '.zip';//md5sum.digest('base64') + '.pdf';
         fs.unlinkSync(filename);
-        fs.unlinkSync('exportedHTMLOffline')
+        fs.removeSync('exportedOfflineHTML-' + id)
+      }
+      if (request.path.includes('exportEPub')) {
+        let filename = 'slidewiki-deck-' + id + '.epub';
+        fs.unlinkSync(filename);
       }
     }
   }
