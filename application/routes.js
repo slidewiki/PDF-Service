@@ -45,7 +45,25 @@ module.exports = function(server) {
     }
   });
 
-  
+  server.route({
+    method: 'GET',
+    path: '/exportReveal/{id}',
+    handler: handlers.getReveal,
+    config: {
+      validate: {
+        params: {
+          id: Joi.string()
+        },
+        query: {
+          limit: Joi.string().optional(),
+          offset: Joi.string().optional(),
+          fullHTML: Joi.string().optional()
+        }
+      },
+      tags: ['api'],
+      description: 'Export the given deck in Reveal.js format'
+    }
+  });
 
   server.on('tail', function(request) {
     return handlers.getPDFEnd(request);
