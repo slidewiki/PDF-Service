@@ -59,6 +59,38 @@ module.exports = {
 
   },
 
+  getEPub: function(request, reply) {
+    let req_path = '/deck/' + request.params.id + '/slides';
+    req_path = Microservices.deck.uri + req_path;
+
+    rp(req_path).then(function(body) {
+      let deckTree = JSON.parse(body);
+      let slides = [];
+      if (deckTree !== '') {
+        //console.log('deckTree is non-empty: ' + deckTree.children.length);
+        for (let i = 0; i < deckTree.children.length; i++) {
+          let slide = deckTree.children[i];
+          slideContent = {
+            data: slide.content
+          };
+          slides.push(slideContent);
+        }
+      }
+      var option = {
+        title: 'SlideWiki Deck ' + request.params.id, // *Required, title of the book.
+        author: 'SlideWiki McSlideWikiFace', // *Required, name of the author.
+        content: slides
+      };
+      let filename = 'slidewiki-deck-' + request.params.id + '.epub';
+
+      new ePub(option, filename).then(function() {
+        reply.file(filename).header('Content-Disposition', 'attachment; filename=' + filename).header('Content-Type', 'application/epub+zip');
+      }, function(err) {
+        request.log(err);
+        reply(boom.badImplementation());
+      });
+    });
+  },
 
 
   // Get given deck as reveal.js, or return NOT FOUND
