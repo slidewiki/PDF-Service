@@ -230,6 +230,10 @@ module.exports = {
         fs.unlinkSync(filename);
         fs.removeSync('exportedOfflineHTML-' + id);
       }
+      if (request.path.includes('exportEPub')) {
+        let filename = 'slidewiki-deck-' + id + '.epub';
+        fs.unlinkSync(filename);
+      }
 
     }
   }
