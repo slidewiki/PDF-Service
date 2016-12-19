@@ -47,6 +47,22 @@ module.exports = function(server) {
 
   server.route({
     method: 'GET',
+    path: '/exportSCORM/{id}',
+    handler: handlers.getSCORM,
+    config: {
+      validate: {
+        params: {
+          id : Joi.string().regex(/^[0-9]+$/).required().description('SlideWiki deck id')
+        }
+      },
+      tags: ['api'],
+      description: 'Export the deck with id {id} as a SCORM template.'
+    }
+  });
+
+
+  server.route({
+    method: 'GET',
     path: '/exportEPub/{id}',
     handler: handlers.getEPub,
     config: {
