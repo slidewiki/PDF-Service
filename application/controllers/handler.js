@@ -14,6 +14,7 @@ const boom = require('boom'), //Boom gives us some predefined http codes and pro
   http_request = require('request'),
   Microservices = require('../configs/microservices'),
   zip = require('adm-zip'),
+  ePub = require('epub-gen'),
   scraper = require('website-scraper'),
   http = require('http');//,
   //Reveal = require('reveal');
@@ -70,7 +71,7 @@ module.exports = {
         //console.log('deckTree is non-empty: ' + deckTree.children.length);
         for (let i = 0; i < deckTree.children.length; i++) {
           let slide = deckTree.children[i];
-          slideContent = {
+          let slideContent = {
             data: slide.content
           };
           slides.push(slideContent);
@@ -78,7 +79,7 @@ module.exports = {
       }
       var option = {
         title: 'SlideWiki Deck ' + request.params.id, // *Required, title of the book.
-        author: 'SlideWiki McSlideWikiFace', // *Required, name of the author.
+        author: 'SlideWiki Author', // *Required, name of the author.
         content: slides
       };
       let filename = 'slidewiki-deck-' + request.params.id + '.epub';
