@@ -83,7 +83,27 @@ module.exports = {
       if (request.query.fullHTML) {
         revealSlides += '<script src="' + platform_path +'/custom_modules/reveal.js/js/reveal.js"></script>' +
           '<script>' +
-          '    Reveal.initialize();' +
+          '    var pptxwidth = 0;' +
+          '    var pptxheight = 0;' +
+          '    var elements = document.getElementsByClassName(\'pptx2html\');' +
+          '    for (var i=0; i < elements.length; i++) {' +
+          '     var eltWidth=parseInt(elements[i].style.width.replace(\'px\', \'\'));' +
+          '     var eltHeight=parseInt(elements[i].style.height.replace(\'px\', \'\'));' +
+          '     if (eltWidth > pptxwidth) {' +
+          '       pptxwidth = eltWidth;' +
+          '     }' +
+          '     if (eltHeight > pptxheight) {' +
+          '       pptxheight = eltHeight;' +
+          '     }' +
+          '    }' +
+          '    if (pptxwidth !== 0 && pptxheight !== 0) {' +
+          '     Reveal.initialize({' +
+          '       width: pptxwidth,' +
+          '       height: pptxheight,' +
+          '     });' +
+          '    } else {' +
+          '     Reveal.initialize();' +
+          '    }' +
           '</script>' +
           '</body>' +
           '</html>';
