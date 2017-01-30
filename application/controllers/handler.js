@@ -84,7 +84,7 @@ module.exports = {
       };
       let filename = 'slidewiki-deck-' + request.params.id + '.epub';
 
-      new ePub(option, filename).then(function() {
+      new ePub(option, filename).promise.then(function() {
         reply.file(filename).header('Content-Disposition', 'attachment; filename=' + filename).header('Content-Type', 'application/epub+zip');
       }, function(err) {
         request.log(err);
