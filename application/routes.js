@@ -38,6 +38,9 @@ module.exports = function(server) {
       validate: {
         params: {
           id : Joi.string().regex(/^[0-9]+$/).required().description('SlideWiki deck id')
+        },
+        query: {
+          theme : Joi.string().optional().valid('blood', 'night', 'beige', 'league', 'serif', 'solarized', 'white', 'black', 'moon', 'simple', 'epub')
         }
       },
       tags: ['api'],
@@ -72,7 +75,8 @@ module.exports = function(server) {
         query: {
           limit: Joi.string().optional(),
           offset: Joi.string().optional(),
-          fullHTML: Joi.string().optional()
+          fullHTML: Joi.string().optional(),
+          theme : Joi.string().optional().valid('blood', 'night', 'beige', 'league', 'serif', 'solarized', 'white', 'black', 'moon', 'simple', 'epub')
         }
       },
       tags: ['api'],

@@ -24,7 +24,8 @@ const boom = require('boom'), //Boom gives us some predefined http codes and pro
 module.exports = {
 
   getOfflineHTML: function(request, reply) {
-    let req_path = '/exportReveal/' + request.params.id + '?fullHTML=true';
+    let theme = request.query.theme ? request.query.theme : 'white';
+    let req_path = '/exportReveal/' + request.params.id + '?fullHTML=true&theme=' + theme;
     req_path = Microservices.pdf.uri + req_path;
     console.log(req_path);
 
@@ -77,9 +78,43 @@ module.exports = {
           slides.push(slideContent);
         }
       }
+      let css = 'div {' +
+          '    font-size: 12pt!important;' +
+          '}' +
+          'span {' +
+          '    font-size: 12pt!important;' +
+          '}' +
+          'div font {' +
+          '    font-size: inherit;' +
+          '}' +
+          '.epub-author {' +
+          '    color: #555;' +
+          '}' +
+          '.epub-link {' +
+          '    margin-bottom: 30px;' +
+          '}' +
+          '.epub-link a {' +
+          '    color: #666;' +
+          '    font-size: 90%;' +
+          '}' +
+          '.toc-author {' +
+          '    font-size: 90%;' +
+          '    color: #555;' +
+          '}' +
+          '.toc-link {' +
+          '    color: #999;' +
+          '    font-size: 85%;' +
+          '    display: block;' +
+          '}' +
+          'hr {' +
+          '    border: 0;' +
+          '    border-bottom: 1px solid #dedede;' +
+          '    margin: 60px 10%;' +
+          '}';
       var option = {
         title: 'SlideWiki Deck ' + request.params.id, // *Required, title of the book.
         author: 'SlideWiki Author', // *Required, name of the author.
+        css: css,
         content: slides
       };
       let filename = 'slidewiki-deck-' + request.params.id + '.epub';
@@ -100,6 +135,7 @@ module.exports = {
     let req_path = '/deck/' + request.params.id + '/slides';
     let limit = request.query.limit ? 'limit=' + request.query.limit : '';
     let offset = request.query.offset ? 'offset=' + request.query.offset : '';
+    let theme = request.query.theme ? request.query.theme : 'white';
     if (limit !== '' && offset !== '') {
       req_path += '?' + limit + '&' + offset;
     } else if (limit !== '') {
@@ -139,7 +175,7 @@ module.exports = {
         revealSlides += '<html>\n' +
         '<head>\n' +
         '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/reveal.css">\n' +
-        '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/theme/white.css">\n' +
+        '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/theme/' + theme + '.css">\n' +
         '</head>\n' +
         '<body>\n';
       }
