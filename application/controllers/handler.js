@@ -10,13 +10,11 @@ const boom = require('boom'), //Boom gives us some predefined http codes and pro
   fs = require('fs-extra'),
   crypto = require('crypto'),
   spawn = require('child_process').spawn,
-  rp = require('request-promise'),
-  http_request = require('request'),
+  rp = require('request-promise-native'),
   Microservices = require('../configs/microservices'),
   zip = require('adm-zip'),
   ePub = require('epub-gen'),
-  scraper = require('website-scraper'),
-  http = require('http');//,
+  scraper = require('website-scraper');//,
   //Reveal = require('reveal');
 
 
