@@ -230,23 +230,23 @@ module.exports = {
         let title = '';
         for (let i = 0; i < revisions.length; i++) {
           if (revisions[i].id === revision_count) {
-              title = revisions[i].title;
+            title = revisions[i].title;
           }
         }
-          let presentation_uri = 'index.html';
+        let presentation_uri = 'index.html';
           //template = template.replace(/SLIDEWIKI_PRESENTATION_URL/g, presentation_uri).replace(/SLIDEWIKI_TITLE/g, title).replace(/SLIDEWIKI_DESCRIPTION/g, description);
-          fs.readFile(scormFile, function(err, data) {
+        fs.readFile(scormFile, function(err, data) {
             template = data+'\n\t\t\t<title>'+title+'</title>';
           });
 
-          let outputFilename = 'slidewiki-scorm-deck-' + id + '.zip';
-          let zipURI = Microservices.pdf.uri + '/exportOfflineHTML/' + id;
-          let file = fs.createWriteStream(outputFilename);
-          let zipReq = rp(zipURI).on('error', function (err) {
+        let outputFilename = 'slidewiki-scorm-deck-' + id + '.zip';
+        let zipURI = Microservices.pdf.uri + '/exportOfflineHTML/' + id;
+        let file = fs.createWriteStream(outputFilename);
+        let zipReq = rp(zipURI).on('error', function (err) {
             fs.unlink(outputFilename); // Delete the file async. (But we don't check the result)
             reply(boom.badImplementation());
           }).pipe(file);
-          file.on('finish', function() {
+        file.on('finish', function() {
             file.close(function() {
               let zfile1 = new zip(outputFilename);
               zfile1.extractAllTo('exportedOfflineHTML-temp-' + id, /*overwrite*/true);
@@ -297,8 +297,8 @@ module.exports = {
           reply(boom.badImplementation());
         });
     }).catch(function(error) {
-        request.log(error);
-        reply(boom.badImplementation());
+      request.log(error);
+      reply(boom.badImplementation());
       });
   },
 
