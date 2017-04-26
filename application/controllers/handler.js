@@ -270,7 +270,7 @@ module.exports = {
               '\n\t\t\t<file href="'+zipEntry.entryName+'"/>'+
                 '\n\t\t</resource>';
               index++;
-             });
+            });
             template +='\n\t</resources>\n</manifest>';
               //console.log("template="+template);
             zfile.addFile('imsmanifest.xml', template);
@@ -352,25 +352,25 @@ module.exports = {
       if (request.path.includes('exportPDF')) {
         //let md5sum = crypto.createHash('md5');
         //md5sum.update(url);
-       let filename = 'slidewiki-deck-' + id + '.pdf';//md5sum.digest('base64') + '.pdf';
-       fs.unlinkSync(filename);
-     }
+        let filename = 'slidewiki-deck-' + id + '.pdf';//md5sum.digest('base64') + '.pdf';
+        fs.unlinkSync(filename);
+      }
       if (request.path.includes('exportOfflineHTML')) {
         //let md5sum = crypto.createHash('md5');
         //md5sum.update(url);
-       let filename = 'slidewiki-deck-' + id + '.zip';//md5sum.digest('base64') + '.pdf';
-       fs.unlinkSync(filename);
-       fs.removeSync('exportedOfflineHTML-' + id);
-     }
+        let filename = 'slidewiki-deck-' + id + '.zip';//md5sum.digest('base64') + '.pdf';
+        fs.unlinkSync(filename);
+        fs.removeSync('exportedOfflineHTML-' + id);
+      }
       if (request.path.includes('exportSCORM')) {
-       let filename = 'slidewiki-scorm-deck-' + id + '.zip';
-       fs.unlinkSync(filename);
-       fs.removeSync('exportedOfflineHTML-temp-' + id);
-     }
+        let filename = 'slidewiki-scorm-deck-' + id + '.zip';
+        fs.unlinkSync(filename);
+        fs.removeSync('exportedOfflineHTML-temp-' + id);
+      }
       if (request.path.includes('exportEPub')) {
-       let filename = 'slidewiki-deck-' + id + '.epub';
-       fs.unlinkSync(filename);
-     }
+        let filename = 'slidewiki-deck-' + id + '.epub';
+        fs.unlinkSync(filename);
+      }
 
     }
   }
