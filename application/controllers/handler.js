@@ -247,131 +247,131 @@ module.exports = {
           reply(boom.badImplementation());
         }).pipe(file);
         file.on('finish', function() {
-          file.close(function() {
-            let zfile1 = new zip(outputFilename);
-            zfile1.extractAllTo('exportedOfflineHTML-temp-' + id, /*overwrite*/true);
-            let zfile = new zip();
-            zfile.addLocalFolder('exportedOfflineHTML-temp-' +id );
-            let zipEntries = zfile.getEntries();
-            let index=0;
-            zipEntries.forEach(function(zipEntry) {
-            template +=
+           file.close(function() {
+             let zfile1 = new zip(outputFilename);
+             zfile1.extractAllTo('exportedOfflineHTML-temp-' + id, /*overwrite*/true);
+             let zfile = new zip();
+             zfile.addLocalFolder('exportedOfflineHTML-temp-' +id );
+             let zipEntries = zfile.getEntries();
+             let index=0;
+             zipEntries.forEach(function(zipEntry) {
+             template +=
               '\n\t\t\t<item identifier=”I_SC'+index+'" identifierref=”SC'+index+'" isvisible=”true”>'+
                 '\n\t\t\t\t<title>'+zipEntry.entryName+'</title>'+
                 '\n\t\t\t</item>';
-                index++;
+             index++;
+           });
 
-              });
-
-            template +='\n\t\t</organization>\n\t</organizations>\n\t<resources>';
-            index=0;
-            zipEntries.forEach(function(zipEntry) {
-            template +=
+           template +='\n\t\t</organization>\n\t</organizations>\n\t<resources>';
+           index=0;
+           zipEntries.forEach(function(zipEntry) {
+           template +=
               '\n\t\t<resource identifier="r'+index+'" type="webcontent" adlcp:scormtype="sco" href="'+zipEntry.entryName+'">'+
               '\n\t\t\t<file href="'+zipEntry.entryName+'"/>'+
                 '\n\t\t</resource>';
-                index++;
-              });
-              template +='\n\t</resources>\n</manifest>';
+           index++;
+           });
+           template +='\n\t</resources>\n</manifest>';
               //console.log("template="+template);
-              zfile.addFile('imsmanifest.xml', template);
+           zfile.addFile('imsmanifest.xml', template);
 
-              if(version === '1.2')
-                zfile.addLocalFolder('scorm1.2');
-              if(version === '2')
-                zfile.addLocalFolder('scorm2');
-              if(version === '3')
-                zfile.addLocalFolder('scorm3');
-              if(version === '4')
-                zfile.addLocalFolder('scorm4');
-              zfile.toBuffer( function(buffer) {
-                reply(buffer).header('Content-Disposition', 'attachment; filename=' + outputFilename).header('Content-Type', 'application/zip');
-              }, function(failure) {
-                reply(boom.badImplementation());
-              });
-            });
-        });
-      }).catch(function(error) { // Handle errors
-          console.log(error);
-          fs.unlink('temp' + outputFilename); // Delete the file async. (But we don't check the result)
-          reply(boom.badImplementation());
-        });
-    }).catch(function(error) {
-      request.log(error);
-      reply(boom.badImplementation());
-    });
-  },
+           if(version === '1.2')
+             zfile.addLocalFolder('scorm1.2');
+           if(version === '2')
+             zfile.addLocalFolder('scorm2');
+           if(version === '3')
+             zfile.addLocalFolder('scorm3');
+           if(version === '4')
+             zfile.addLocalFolder('scorm4');
+
+           zfile.toBuffer( function(buffer) {
+             reply(buffer).header('Content-Disposition', 'attachment; filename=' + outputFilename).header('Content-Type', 'application/zip');
+               }, function(failure) {
+                 reply(boom.badImplementation());
+             });
+           });
+         });
+       }).catch(function(error) { // Handle errors
+       console.log(error);
+       fs.unlink('temp' + outputFilename); // Delete the file async. (But we don't check the result)
+       reply(boom.badImplementation());
+     });
+   }).catch(function(error) {
+     request.log(error);
+     reply(boom.badImplementation());
+   });
+ },
 
 
   //Get PDF from URL or return NOT FOUND
-  getPDF: function(request, reply) {
-    let id = request.params.id;
-    let url = Microservices.pdf.uri + '/exportReveal/' + id + '?fullHTML=true';
+ getPDF: function(request, reply) {
+   let id = request.params.id;
+   let url = Microservices.pdf.uri + '/exportReveal/' + id + '?fullHTML=true';
 
 
     //let md5sum = crypto.createHash('md5');
     //md5sum.update(url);
-    let filename = 'slidewiki-deck-' + id + '.pdf';//md5sum.digest('base64') + '.pdf';
+   let filename = 'slidewiki-deck-' + id + '.pdf';//md5sum.digest('base64') + '.pdf';
 
-    let command = request.query.command ? request.query.command : 'reveal';
-    let size = request.query.slideSize ? request.query.slideSize : '';
-    let slides = request.query.slides ? request.query.slides : '';
-    let outputFilename = request.query.pdf ? request.query.pdf : 'slidewiki-deck-' + id + '.pdf';
-    let decktapeArgs = ['decktape/decktape.js'];
-    if ( size !== '') {
-      decktapeArgs.push('--size', size);
-    }
-    if ( slides !== '') {
-      decktapeArgs.push('--slides', slides);
-    }
-    decktapeArgs.push(command);
-    decktapeArgs.push(url);
-    decktapeArgs.push(filename);
+   let command = request.query.command ? request.query.command : 'reveal';
+   let size = request.query.slideSize ? request.query.slideSize : '';
+   let slides = request.query.slides ? request.query.slides : '';
+   let outputFilename = request.query.pdf ? request.query.pdf : 'slidewiki-deck-' + id + '.pdf';
+   let decktapeArgs = ['decktape/decktape.js'];
+   if ( size !== '') {
+     decktapeArgs.push('--size', size);
+   }
+   if ( slides !== '') {
+     decktapeArgs.push('--slides', slides);
+   }
+   decktapeArgs.push(command);
+   decktapeArgs.push(url);
+   decktapeArgs.push(filename);
 
-    let decktape = spawn('decktape/bin/phantomjs', decktapeArgs);
-    console.log(decktapeArgs);
-    decktape.stdout.on('data', (data) => {
-      console.log(`stdout: ${data}`);
-    });
+   let decktape = spawn('decktape/bin/phantomjs', decktapeArgs);
+   console.log(decktapeArgs);
+   decktape.stdout.on('data', (data) => {
+     console.log(`stdout: ${data}`);
+   });
 
-    decktape.stderr.on('data', (data) => {
-      console.log(`stderr: ${data}`);
-    });
+   decktape.stderr.on('data', (data) => {
+     console.log(`stderr: ${data}`);
+   });
 
-    decktape.on('close', (code) => {
+   decktape.on('close', (code) => {
       //console.log('FILENAME: ' + filename);
-      reply.file(filename).header('Content-Disposition', 'attachment; filename=' + outputFilename).header('Content-Type', 'application/pdf');
-    });
+     reply.file(filename).header('Content-Disposition', 'attachment; filename=' + outputFilename).header('Content-Type', 'application/pdf');
+   });
 
-  },
-  getPDFEnd : function(request) {
-    if (request.params.id) {
-      let id = request.params.id;
-      let url = Microservices.pdf.uri + '/exportReveal/' + id + '?fullHTML=true';
-      if (request.path.includes('exportPDF')) {
+ },
+
+ getPDFEnd : function(request) {
+   if (request.params.id) {
+     let id = request.params.id;
+     let url = Microservices.pdf.uri + '/exportReveal/' + id + '?fullHTML=true';
+     if (request.path.includes('exportPDF')) {
         //let md5sum = crypto.createHash('md5');
         //md5sum.update(url);
-        let filename = 'slidewiki-deck-' + id + '.pdf';//md5sum.digest('base64') + '.pdf';
-        fs.unlinkSync(filename);
-      }
-      if (request.path.includes('exportOfflineHTML')) {
+       let filename = 'slidewiki-deck-' + id + '.pdf';//md5sum.digest('base64') + '.pdf';
+       fs.unlinkSync(filename);
+     }
+     if (request.path.includes('exportOfflineHTML')) {
         //let md5sum = crypto.createHash('md5');
         //md5sum.update(url);
-        let filename = 'slidewiki-deck-' + id + '.zip';//md5sum.digest('base64') + '.pdf';
-        fs.unlinkSync(filename);
-        fs.removeSync('exportedOfflineHTML-' + id);
-      }
-      if (request.path.includes('exportSCORM')) {
-        let filename = 'slidewiki-scorm-deck-' + id + '.zip';
-        fs.unlinkSync(filename);
-        fs.removeSync('exportedOfflineHTML-temp-' + id);
-      }
-      if (request.path.includes('exportEPub')) {
-        let filename = 'slidewiki-deck-' + id + '.epub';
-        fs.unlinkSync(filename);
-      }
+       let filename = 'slidewiki-deck-' + id + '.zip';//md5sum.digest('base64') + '.pdf';
+       fs.unlinkSync(filename);
+       fs.removeSync('exportedOfflineHTML-' + id);
+     }
+     if (request.path.includes('exportSCORM')) {
+       let filename = 'slidewiki-scorm-deck-' + id + '.zip';
+       fs.unlinkSync(filename);
+       fs.removeSync('exportedOfflineHTML-temp-' + id);
+     }
+     if (request.path.includes('exportEPub')) {
+       let filename = 'slidewiki-deck-' + id + '.epub';
+       fs.unlinkSync(filename);
+     }
 
-    }
-  }
-
+   }
+ }
 };
