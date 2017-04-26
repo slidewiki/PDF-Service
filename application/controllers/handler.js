@@ -247,7 +247,7 @@ module.exports = {
           reply(boom.badImplementation());
         }).pipe(file);
         file.on('finish', function() {
-           file.close(function() {
+          file.close(function() {
              let zfile1 = new zip(outputFilename);
              zfile1.extractAllTo('exportedOfflineHTML-temp-' + id, /*overwrite*/true);
              let zfile = new zip();
@@ -255,56 +255,56 @@ module.exports = {
              let zipEntries = zfile.getEntries();
              let index=0;
              zipEntries.forEach(function(zipEntry) {
-             template +=
+               template +=
               '\n\t\t\t<item identifier=”I_SC'+index+'" identifierref=”SC'+index+'" isvisible=”true”>'+
                 '\n\t\t\t\t<title>'+zipEntry.entryName+'</title>'+
                 '\n\t\t\t</item>';
-             index++;
-           });
+               index++;
+             });
 
-           template +='\n\t\t</organization>\n\t</organizations>\n\t<resources>';
-           index=0;
-           zipEntries.forEach(function(zipEntry) {
-           template +=
+             template +='\n\t\t</organization>\n\t</organizations>\n\t<resources>';
+             index=0;
+             zipEntries.forEach(function(zipEntry) {
+             template +=
               '\n\t\t<resource identifier="r'+index+'" type="webcontent" adlcp:scormtype="sco" href="'+zipEntry.entryName+'">'+
               '\n\t\t\t<file href="'+zipEntry.entryName+'"/>'+
                 '\n\t\t</resource>';
-           index++;
+             index++;
            });
-           template +='\n\t</resources>\n</manifest>';
+             template +='\n\t</resources>\n</manifest>';
               //console.log("template="+template);
-           zfile.addFile('imsmanifest.xml', template);
+             zfile.addFile('imsmanifest.xml', template);
 
-           if(version === '1.2')
-             zfile.addLocalFolder('scorm1.2');
-           if(version === '2')
-             zfile.addLocalFolder('scorm2');
-           if(version === '3')
-             zfile.addLocalFolder('scorm3');
-           if(version === '4')
-             zfile.addLocalFolder('scorm4');
+             if(version === '1.2')
+              zfile.addLocalFolder('scorm1.2');
+             if(version === '2')
+              zfile.addLocalFolder('scorm2');
+             if(version === '3')
+              zfile.addLocalFolder('scorm3');
+             if(version === '4')
+              zfile.addLocalFolder('scorm4');
 
-           zfile.toBuffer( function(buffer) {
+             zfile.toBuffer( function(buffer) {
              reply(buffer).header('Content-Disposition', 'attachment; filename=' + outputFilename).header('Content-Type', 'application/zip');
-               }, function(failure) {
-                 reply(boom.badImplementation());
-             });
+           }, function(failure) {
+             reply(boom.badImplementation());
            });
-         });
-       }).catch(function(error) { // Handle errors
-       console.log(error);
-       fs.unlink('temp' + outputFilename); // Delete the file async. (But we don't check the result)
-       reply(boom.badImplementation());
-     });
-   }).catch(function(error) {
+          });
+        });
+      }).catch(function(error) { // Handle errors
+         console.log(error);
+         fs.unlink('temp' + outputFilename); // Delete the file async. (But we don't check the result)
+         reply(boom.badImplementation());
+       });
+    }).catch(function(error) {
      request.log(error);
      reply(boom.badImplementation());
    });
- },
+  },
 
 
   //Get PDF from URL or return NOT FOUND
- getPDF: function(request, reply) {
+  getPDF: function(request, reply) {
    let id = request.params.id;
    let url = Microservices.pdf.uri + '/exportReveal/' + id + '?fullHTML=true';
 
@@ -345,7 +345,7 @@ module.exports = {
 
  },
 
- getPDFEnd : function(request) {
+  getPDFEnd : function(request) {
    if (request.params.id) {
      let id = request.params.id;
      let url = Microservices.pdf.uri + '/exportReveal/' + id + '?fullHTML=true';
