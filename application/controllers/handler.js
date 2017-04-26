@@ -195,32 +195,32 @@ module.exports = {
 
   //Get SCORM version
   getSCORM: function(request, reply) {
-      let offline = false;
-      let format = 'xml';
-      let version = '1.2';
-      if (request.query) {
+    let offline = false;
+    let format = 'xml';
+    let version = '1.2';
+    if (request.query) {
         offline = request.query.offline ? request.query.offline : false;
         format = request.query.format ? request.query.format : 'xml';
         version = request.query.version ? request.query.version : '1.2';
       }
-      let id = request.params.id;
-      let template = '';
-      let scormFile = 'scormtemplates/imsmanifest1.xml';
-      if(version == '1.2'){
+    let id = request.params.id;
+    let template = '';
+    let scormFile = 'scormtemplates/imsmanifest1.xml';
+    if(version === '1.2'){
         scormFile = 'scormtemplates/imsmanifest1.xml';
       }
-      if(version == '2'){
+    if(version === '2'){
         scormFile = 'scormtemplates/imsmanifest2.xml';
       }
-      if(version == '3'){
+    if(version === '3'){
         scormFile = 'scormtemplates/imsmanifest3.xml';
       }
-      if(version == '4'){
+    if(version === '4'){
         scormFile = 'scormtemplates/imsmanifest4.xml';
       }
 
-      let req_url = Microservices.deck.uri + '/deck/' + id + '/revisionCount';
-      rp(req_url).then(function(body) {
+    let req_url = Microservices.deck.uri + '/deck/' + id + '/revisionCount';
+    rp(req_url).then(function(body) {
         let revision_count=body;
         let req_url = Microservices.deck.uri + '/deck/' + id;
         rp(req_url).then(function(body) {
@@ -236,7 +236,7 @@ module.exports = {
           let presentation_uri = 'index.html';
           //template = template.replace(/SLIDEWIKI_PRESENTATION_URL/g, presentation_uri).replace(/SLIDEWIKI_TITLE/g, title).replace(/SLIDEWIKI_DESCRIPTION/g, description);
           fs.readFile(scormFile, function(err, data) {
-              template = data+'\n\t\t\t<title>'+title+'</title>';
+            template = data+'\n\t\t\t<title>'+title+'</title>';
           });
 
           let outputFilename = 'slidewiki-scorm-deck-' + id + '.zip';
@@ -255,7 +255,7 @@ module.exports = {
               let zipEntries = zfile.getEntries();
               let index=0;
               zipEntries.forEach(function(zipEntry) {
-              template +=
+            template +=
               '\n\t\t\t<item identifier=”I_SC'+index+'" identifierref=”SC'+index+'" isvisible=”true”>'+
                 '\n\t\t\t\t<title>'+zipEntry.entryName+'</title>'+
                 '\n\t\t\t</item>';
@@ -266,7 +266,7 @@ module.exports = {
               template +='\n\t\t</organization>\n\t</organizations>\n\t<resources>';
               index=0;
               zipEntries.forEach(function(zipEntry) {
-              template +=
+            template +=
               '\n\t\t<resource identifier="r'+index+'" type="webcontent" adlcp:scormtype="sco" href="'+zipEntry.entryName+'">'+
               '\n\t\t\t<file href="'+zipEntry.entryName+'"/>'+
                 '\n\t\t</resource>';
@@ -276,14 +276,14 @@ module.exports = {
               //console.log("template="+template);
               zfile.addFile('imsmanifest.xml', template);
 
-              if(version == '1.2')
+              if(version === '1.2')
                 zfile.addLocalFolder('scorm1.2');
-              if(version == '2')
-                  zfile.addLocalFolder('scorm2');
-              if(version == '3')
-                  zfile.addLocalFolder('scorm3');
-              if(version == '4')
-                  zfile.addLocalFolder('scorm4');
+              if(version === '2')
+                zfile.addLocalFolder('scorm2');
+              if(version === '3')
+                zfile.addLocalFolder('scorm3');
+              if(version === '4')
+                zfile.addLocalFolder('scorm4');
               zfile.toBuffer( function(buffer) {
                 reply(buffer).header('Content-Disposition', 'attachment; filename=' + outputFilename).header('Content-Type', 'application/zip');
               }, function(failure) {
@@ -364,13 +364,11 @@ module.exports = {
         fs.unlinkSync(filename);
         fs.removeSync('exportedOfflineHTML-' + id);
       }
-
-       if (request.path.includes('exportSCORM')) {
+      if (request.path.includes('exportSCORM')) {
         let filename = 'slidewiki-scorm-deck-' + id + '.zip';
         fs.unlinkSync(filename);
         fs.removeSync('exportedOfflineHTML-temp-' + id);
       }
-
       if (request.path.includes('exportEPub')) {
         let filename = 'slidewiki-deck-' + id + '.epub';
         fs.unlinkSync(filename);
