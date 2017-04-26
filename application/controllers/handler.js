@@ -193,6 +193,135 @@ module.exports = {
     });
   },
 
+  //Get SCORM version
+  getSCORM: function(request, reply) {
+      let offline = false;
+      let format = 'xml';
+      let version='1.2';
+      console.log('1st');
+      if (request.query) {
+        offline = request.query.offline ? request.query.offline : false;
+        format = request.query.format ? request.query.format : 'xml';
+        version = request.query.version ? request.query.version : '1.2';
+      }
+      let id = request.params.id;
+      let template= '';
+
+      let scormFile = 'scormtemplates/imsmanifest1.xml';
+
+      if(version=='1.2'){
+        scormFile = 'scormtemplates/imsmanifest1.xml';
+      }
+      if(version=='2'){
+        scormFile = 'scormtemplates/imsmanifest2.xml';
+      }
+      if(version=='3'){
+        scormFile = 'scormtemplates/imsmanifest3.xml';
+      }
+      if(version=='4'){
+        scormFile = 'scormtemplates/imsmanifest4.xml';
+      }
+
+
+      let req_url = Microservices.deck.uri + '/deck/' + id + '/revisionCount';
+
+      rp(req_url).then(function(body) {
+        let revision_count=body;
+        let req_url = Microservices.deck.uri + '/deck/' + id;
+        rp(req_url).then(function(body) {
+          let deck_metadata = JSON.parse(body);
+          let description = deck_metadata.description;
+          let revisions = deck_metadata.revisions;
+          let title = '';
+          for (let i = 0; i < revisions.length; i++) {
+            if (revisions[i].id === revision_count) {
+              title = revisions[i].title;
+            }
+          }
+          let presentation_uri = 'index.html';
+          //template = template.replace(/SLIDEWIKI_PRESENTATION_URL/g, presentation_uri).replace(/SLIDEWIKI_TITLE/g, title).replace(/SLIDEWIKI_DESCRIPTION/g, description);
+
+          fs.readFile(scormFile, function(err, data) {
+              template = data+'\n\t\t\t<title>'+title+'</title>';
+          });
+
+
+          let outputFilename = 'slidewiki-scorm-deck-' + id + '.zip';
+          let zipURI = Microservices.pdf.uri + '/exportOfflineHTML/' + id;
+
+          let file = fs.createWriteStream(outputFilename);
+
+          let zipReq = rp(zipURI).on('error', function (err) {
+            fs.unlink(outputFilename); // Delete the file async. (But we don't check the result)
+            reply(boom.badImplementation());
+          }).pipe(file);
+          file.on('finish', function() {
+            file.close(function() {
+
+              let zfile1 = new zip(outputFilename);
+              zfile1.extractAllTo('exportedOfflineHTML-temp-' + id, /*overwrite*/true);
+
+
+              let zfile = new zip();
+
+              zfile.addLocalFolder('exportedOfflineHTML-temp-' +id );
+              let zipEntries = zfile.getEntries();
+
+              let index=0;
+              zipEntries.forEach(function(zipEntry) {
+              template +=
+              '\n\t\t\t<item identifier=”I_SC'+index+'" identifierref=”SC'+index+'" isvisible=”true”>'+
+                '\n\t\t\t\t<title>'+zipEntry.entryName+'</title>'+
+                '\n\t\t\t</item>';
+                index++;
+
+              });
+
+              template +='\n\t\t</organization>\n\t</organizations>\n\t<resources>';
+              index=0;
+              zipEntries.forEach(function(zipEntry) {
+              template +=
+              '\n\t\t<resource identifier="r'+index+'" type="webcontent" adlcp:scormtype="sco" href="'+zipEntry.entryName+'">'+
+              '\n\t\t\t<file href="'+zipEntry.entryName+'"/>'+
+                '\n\t\t</resource>';
+                index++;
+              });
+              template +='\n\t</resources>\n</manifest>';
+              //console.log("template="+template);
+              zfile.addFile('imsmanifest.xml', template);
+
+              if(version=='1.2')
+                zfile.addLocalFolder('scorm1.2');
+              if(version=='2')
+                  zfile.addLocalFolder('scorm2');
+              if(version=='3')
+                  zfile.addLocalFolder('scorm3');
+              if(version=='4')
+                  zfile.addLocalFolder('scorm4');
+
+
+              zfile.toBuffer( function(buffer) {
+                reply(buffer).header('Content-Disposition', 'attachment; filename=' + outputFilename).header('Content-Type', 'application/zip');
+              }, function(failure) {
+                reply(boom.badImplementation());
+              });
+            });
+          });
+        }).catch(function(error) { // Handle errors
+          console.log(error);
+          fs.unlink('temp' + outputFilename); // Delete the file async. (But we don't check the result)
+          reply(boom.badImplementation());
+        });
+      }).catch(function(error) {
+        request.log(error);
+        reply(boom.badImplementation());
+      });
+  },
+
+
+
+
+
   //Get PDF from URL or return NOT FOUND
   getPDF: function(request, reply) {
     let id = request.params.id;
@@ -251,6 +380,13 @@ module.exports = {
         fs.unlinkSync(filename);
         fs.removeSync('exportedOfflineHTML-' + id);
       }
+
+       if (request.path.includes('exportSCORM')) {
+        let filename = 'slidewiki-scorm-deck-' + id + '.zip';
+        fs.unlinkSync(filename);
+        fs.removeSync('exportedOfflineHTML-temp-' + id);
+      }
+
       if (request.path.includes('exportEPub')) {
         let filename = 'slidewiki-deck-' + id + '.epub';
         fs.unlinkSync(filename);
