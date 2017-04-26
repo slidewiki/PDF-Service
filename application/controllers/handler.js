@@ -236,26 +236,26 @@ module.exports = {
         let presentation_uri = 'index.html';
           //template = template.replace(/SLIDEWIKI_PRESENTATION_URL/g, presentation_uri).replace(/SLIDEWIKI_TITLE/g, title).replace(/SLIDEWIKI_DESCRIPTION/g, description);
         fs.readFile(scormFile, function(err, data) {
-            template = data+'\n\t\t\t<title>'+title+'</title>';
-          });
+          template = data+'\n\t\t\t<title>'+title+'</title>';
+        });
 
         let outputFilename = 'slidewiki-scorm-deck-' + id + '.zip';
         let zipURI = Microservices.pdf.uri + '/exportOfflineHTML/' + id;
         let file = fs.createWriteStream(outputFilename);
         let zipReq = rp(zipURI).on('error', function (err) {
-            fs.unlink(outputFilename); // Delete the file async. (But we don't check the result)
-            reply(boom.badImplementation());
-          }).pipe(file);
+          fs.unlink(outputFilename); // Delete the file async. (But we don't check the result)
+          reply(boom.badImplementation());
+        }).pipe(file);
         file.on('finish', function() {
-            file.close(function() {
-              let zfile1 = new zip(outputFilename);
-              zfile1.extractAllTo('exportedOfflineHTML-temp-' + id, /*overwrite*/true);
-              let zfile = new zip();
-              zfile.addLocalFolder('exportedOfflineHTML-temp-' +id );
-              let zipEntries = zfile.getEntries();
-              let index=0;
-              zipEntries.forEach(function(zipEntry) {
-              template +=
+          file.close(function() {
+            let zfile1 = new zip(outputFilename);
+            zfile1.extractAllTo('exportedOfflineHTML-temp-' + id, /*overwrite*/true);
+            let zfile = new zip();
+            zfile.addLocalFolder('exportedOfflineHTML-temp-' +id );
+            let zipEntries = zfile.getEntries();
+            let index=0;
+            zipEntries.forEach(function(zipEntry) {
+            template +=
               '\n\t\t\t<item identifier=”I_SC'+index+'" identifierref=”SC'+index+'" isvisible=”true”>'+
                 '\n\t\t\t\t<title>'+zipEntry.entryName+'</title>'+
                 '\n\t\t\t</item>';
@@ -263,10 +263,10 @@ module.exports = {
 
               });
 
-              template +='\n\t\t</organization>\n\t</organizations>\n\t<resources>';
-              index=0;
-              zipEntries.forEach(function(zipEntry) {
-              template +=
+            template +='\n\t\t</organization>\n\t</organizations>\n\t<resources>';
+            index=0;
+            zipEntries.forEach(function(zipEntry) {
+            template +=
               '\n\t\t<resource identifier="r'+index+'" type="webcontent" adlcp:scormtype="sco" href="'+zipEntry.entryName+'">'+
               '\n\t\t\t<file href="'+zipEntry.entryName+'"/>'+
                 '\n\t\t</resource>';
@@ -290,8 +290,8 @@ module.exports = {
                 reply(boom.badImplementation());
               });
             });
-          });
-        }).catch(function(error) { // Handle errors
+        });
+      }).catch(function(error) { // Handle errors
           console.log(error);
           fs.unlink('temp' + outputFilename); // Delete the file async. (But we don't check the result)
           reply(boom.badImplementation());
@@ -299,7 +299,7 @@ module.exports = {
     }).catch(function(error) {
       request.log(error);
       reply(boom.badImplementation());
-      });
+    });
   },
 
 
