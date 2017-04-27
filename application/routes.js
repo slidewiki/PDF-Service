@@ -75,7 +75,7 @@ module.exports = function(server) {
         }
       },
       tags: ['api'],
-      description: 'Export the deck with id {id} as a SCORM template.'
+      description: 'Export the deck with id {id} and selected version {version} as a SCORM template.'
     }
   });
 
