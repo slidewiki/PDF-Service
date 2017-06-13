@@ -1,5 +1,5 @@
 pdfservice:
-  image: slidewiki/pdfservice
+  image: slidewiki/pdfservice:latest-dev
   restart: on-failure:5
   expose:
     - "80"
