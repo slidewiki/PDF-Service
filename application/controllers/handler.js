@@ -22,8 +22,11 @@ const boom = require('boom'), //Boom gives us some predefined http codes and pro
 module.exports = {
 
   getOfflineHTML: function(request, reply) {
-    let theme = request.query.theme ? request.query.theme : 'white';
-    let req_path = '/exportReveal/' + request.params.id + '?fullHTML=true&theme=' + theme;
+    let req_path = '/exportReveal/' + request.params.id + '?fullHTML=true';
+    if (request.query.theme) {
+      let theme = request.query.theme;
+      req_path = req_path + '&theme=' + theme;
+    }
     req_path = Microservices.pdf.uri + req_path;
     console.log(req_path);
 
@@ -133,7 +136,7 @@ module.exports = {
     let req_path = '/deck/' + request.params.id + '/slides';
     let limit = request.query.limit ? 'limit=' + request.query.limit : '';
     let offset = request.query.offset ? 'offset=' + request.query.offset : '';
-    let theme = request.query.theme ? request.query.theme : 'white';
+    let theme = request.query.theme ? request.query.theme : '';
     if (limit !== '' && offset !== '') {
       req_path += '?' + limit + '&' + offset;
     } else if (limit !== '') {
@@ -148,6 +151,10 @@ module.exports = {
     rp(req_path).then(function(body) {
       let deckTree = JSON.parse(body);
       //request.log(deckTree);
+      if (deckTree.theme && theme === '') {
+        theme = deckTree.theme;
+        //console.log('theme: ' + theme);
+      }
       let slides = [];
       if (deckTree !== '') {
         //console.log('deckTree is non-empty: ' + deckTree.children.length);
