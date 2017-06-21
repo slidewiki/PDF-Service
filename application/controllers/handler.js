@@ -14,9 +14,55 @@ const boom = require('boom'), //Boom gives us some predefined http codes and pro
   Microservices = require('../configs/microservices'),
   zip = require('adm-zip'),
   ePub = require('epub-gen'),
+  //exiftool = require('node-exiftool'),
+  //exiftoolBin = require('dist-exiftool'),
+  //ep = new exiftool.ExiftoolProcess(exiftoolBin),
   scraper = require('website-scraper');//,
   //Reveal = require('reveal');
 
+let getMetadata = function(id, callback) {
+  let metadata_req_url = Microservices.deck.uri + '/deck/' + id;
+  rp(metadata_req_url).then(function(body) {
+    let deck_metadata = JSON.parse(body);
+    let user = deck_metadata.user;
+    let title = 'SlideWiki Deck ' + id;
+    if (deck_metadata.revisions && deck_metadata.revisions[0] && deck_metadata.revisions[0].title) {
+      title = deck_metadata.revisions[0].title;
+    }
+    console.log(JSON.stringify(body));
+    let contributors = [parseInt(user)];
+    for ( let i = 0; i < deck_metadata.contributors.length; i++) {
+      contributors.push(parseInt(deck_metadata.contributors[i].user));
+      console.log(deck_metadata.contributors[i].user);
+      console.log(contributors);
+    }
+    let usernames_req_url = Microservices.user.uri + '/users';
+    let users_options = {
+      method: 'POST',
+      uri: usernames_req_url,
+      body: contributors,
+      json: true
+    };
+    console.log(JSON.stringify(users_options));
+    rp(users_options).then(function(parsedBody) {
+      let results = {};
+      results.title = title;
+      results.license = deck_metadata.license;
+      let usernames = [];
+      for (let i = 0 ; i < parsedBody.length; i++) {//user_entry in parsedBody) {
+        let user_entry = parsedBody[i];
+        if (user_entry._id === user) {
+          results.author = user_entry.username;
+        } else {
+          usernames.push(user_entry.username);
+        }
+      }
+      results.contributors = usernames;
+      console.log(JSON.stringify(results));
+      callback(results);
+    });
+  });
+};
 
 
 module.exports = {
@@ -137,6 +183,7 @@ module.exports = {
     let limit = request.query.limit ? 'limit=' + request.query.limit : '';
     let offset = request.query.offset ? 'offset=' + request.query.offset : '';
     let theme = request.query.theme ? request.query.theme : '';
+    let licensing = request.query.licensing ? request.query.licensing : 'false';
     if (limit !== '' && offset !== '') {
       req_path += '?' + limit + '&' + offset;
     } else if (limit !== '') {
@@ -147,91 +194,106 @@ module.exports = {
     req_path = Microservices.deck.uri + req_path;
     let platform_path = Microservices.platform.uri;
     //console.log('req_path: ' + req_path);
-
-    rp(req_path).then(function(body) {
-      let deckTree = JSON.parse(body);
-      //request.log(deckTree);
-      if (deckTree.theme && theme === '') {
-        theme = deckTree.theme;
-        //console.log('theme: ' + theme);
-      }
-      let slides = [];
-      if (deckTree !== '') {
-        //console.log('deckTree is non-empty: ' + deckTree.children.length);
-        for (let i = 0; i < deckTree.children.length; i++) {
-          let slide = deckTree.children[i];
-          //console.log(slide);
-          let speakerNotes = slide.speakerNotes ? '<aside class="notes">' + slide.speakerNotes + '</aside>': '';
-          let content = slide.content + speakerNotes ;
-          slides.push('<section key="' + slide.id + '" id="' + slide.id + '">' + content + '</section>');
-          //console.log('slide: ' + slides[i]);
-
+    getMetadata(request.params.id, function(metadata) {
+      //"title": "Copyright and Licensing",
+      let copyright_slide = "<div class=\"pptx2html\" id=\"87705\" style=\"position: relative; width: 960px; height: 720px;\"><div _id=\"3\" _idx=\"1\" _name=\"Content Placeholder 2\" _type=\"body\" class=\"block content v-up context-menu-disabled\" id=\"65624\" style=\"position: absolute; top: 58.90356699625651px; left: 69.00000746532153px; width: 828px; height: 456.833px; z-index: 23520; cursor: auto;\" tabindex=\"0\"><p style=\"text-align: center;\" id=\"93898\">Author: SLIDEWIKI_AUTHOR</p><p //style=\"text-align: center;\" id=\"10202\">Contributors:&nbsp;SLIDEWIKI_CONTRIBUTORS</p><p style=\"text-align: center;\" id=\"38083\">Licenced under the Creative Commons Attribution ShareAlike licence (<a href=\"http://creativecommons.org/licenses/by-sa/4.0/\" id=\"62598\">CC-BY-SA</a>)</p><p style=\"text-align: center;\" id=\"96218\">This deck was created using&nbsp;<a href=\"http://slidewiki.org\" id=\"40974\">SlideWiki</a>.</p><div class=\"h-left\" id=\"63022\">&nbsp;</div></div></div>";
+      let contributor_string = '';
+      for (let i = 0; i < metadata.contributors.length; i++) {
+        contributor_string += metadata.contributors[i];
+        if (i < metadata.contributors.length - 1) {
+          contributor_string += ',';
         }
-      } else {
-        slides = '<section/>';
       }
-      let defaultCSS = '{' +
-        'height: \'100%\',' +
-        'position: \'absolute\',' +
-        'top: \'0\',' +
-      '}';
-      let revealSlides = '';
-      if (request.query.fullHTML) {
-        revealSlides += '<html>\n' +
-        '<head>\n' +
-        '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/reveal.css">\n' +
-        '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/theme/' + theme + '.css">\n' +
-        '</head>\n' +
-        '<body>\n';
-      }
-      revealSlides += '<div>\n'+
-      '          <div class="reveal" className="reveal" style=' + defaultCSS + '>\n' +
-      '            <div class="slides" className="slides">\n';
-      //console.log('revealSlides: ' + revealSlides);
-      for (let i = 0; i < slides.length; i++) {
+      copyright_slide = copyright_slide.replace('SLIDEWIKI_CONTRIBUTORS', contributor_string).replace('SLIDEWIKI_AUTHOR', metadata.author);
+      rp(req_path).then(function(body) {
+        let deckTree = JSON.parse(body);
+        //request.log(deckTree);
+        if (deckTree.theme && theme === '') {
+          theme = deckTree.theme;
+          console.log('theme: ' + theme);
+        }
+        console.log('theme: ' + theme);
+        let slides = [];
+        if (deckTree !== '') {
+          //console.log('deckTree is non-empty: ' + deckTree.children.length);
+          for (let i = 0; i < deckTree.children.length; i++) {
+            let slide = deckTree.children[i];
+            //console.log(slide);
+            let speakerNotes = slide.speakerNotes ? '<aside class="notes">' + slide.speakerNotes + '</aside>': '';
+            let content = slide.content + speakerNotes ;
+            slides.push('<section key="' + slide.id + '" id="' + slide.id + '">' + content + '</section>');
+            //console.log('slide: ' + slides[i]);
+
+          }
+          if (licensing) {
+            slides.push('<section>' + copyright_slide + '</section>');
+          }
+        } else {
+          slides = '<section/>';
+        }
+        let defaultCSS = '{' +
+          'height: \'100%\',' +
+          'position: \'absolute\',' +
+          'top: \'0\',' +
+        '}';
+        let revealSlides = '';
+        if (request.query.fullHTML) {
+          revealSlides += '<html>\n' +
+          '<head>\n' +
+          '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/reveal.css">\n' +
+          '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/theme/' + theme + '.css">\n' +
+          '</head>\n' +
+          '<body>\n';
+        }
+        revealSlides += '<div>\n'+
+        '          <div class="reveal" className="reveal">\n' +// style=' + defaultCSS + '>\n' +
+        '            <div class="slides" className="slides">\n';
         //console.log('revealSlides: ' + revealSlides);
-        revealSlides += '              ' + slides[i] + '\n';
-      }
-      revealSlides += '            </div>' +
-        '          </div>' +
-        '          <br style={clear: \'both\'}/>' +
-        '        </div>';
-      if (request.query.fullHTML) {
-        revealSlides += '<script src="' + platform_path +'/custom_modules/reveal.js/js/reveal.js"></script>' +
-          '<script>' +
-          '    var pptxwidth = 0;' +
-          '    var pptxheight = 0;' +
-          '    var elements = document.getElementsByClassName(\'pptx2html\');' +
-          '    for (var i=0; i < elements.length; i++) {' +
-          '     var eltWidth=parseInt(elements[i].style.width.replace(\'px\', \'\'));' +
-          '     var eltHeight=parseInt(elements[i].style.height.replace(\'px\', \'\'));' +
-          '     if (eltWidth > pptxwidth) {' +
-          '       pptxwidth = eltWidth;' +
-          '     }' +
-          '     if (eltHeight > pptxheight) {' +
-          '       pptxheight = eltHeight;' +
-          '     }' +
-          '    }' +
-          '    if (pptxwidth !== 0 && pptxheight !== 0) {' +
-          '     Reveal.initialize({' +
-          '       width: pptxwidth,' +
-          '       height: pptxheight,' +
-          '     });' +
-          '    } else {' +
-          '     Reveal.initialize();' +
-          '    }' +
-          '</script>' +
-          '</body>' +
-          '</html>';
-      }
-      //request.log('revealSlides: ' + revealSlides);
-      //console.log(revealSlides);
-      reply(revealSlides);
-    }).catch(function(error) {
-      request.log('error', error);
-      //console.log(error);
-      reply(boom.badImplementation());
-    });
+        for (let i = 0; i < slides.length; i++) {
+          //console.log('revealSlides: ' + revealSlides);
+          revealSlides += '              ' + slides[i] + '\n';
+        }
+        revealSlides += '            </div>' +
+          '          </div>' +
+          '          <br>' + //style={clear: \'both\'}/>' +
+          '        </div>';
+        if (request.query.fullHTML) {
+          revealSlides += '<script src="' + platform_path +'/custom_modules/reveal.js/js/reveal.js"></script>' +
+            '<script>' +
+            '    var pptxwidth = 0;' +
+            '    var pptxheight = 0;' +
+            '    var elements = document.getElementsByClassName(\'pptx2html\');' +
+            '    for (var i=0; i < elements.length; i++) {' +
+            '     var eltWidth=parseInt(elements[i].style.width.replace(\'px\', \'\'));' +
+            '     var eltHeight=parseInt(elements[i].style.height.replace(\'px\', \'\'));' +
+            '     if (eltWidth > pptxwidth) {' +
+            '       pptxwidth = eltWidth;' +
+            '     }' +
+            '     if (eltHeight > pptxheight) {' +
+            '       pptxheight = eltHeight;' +
+            '     }' +
+            '    }' +
+            '    if (pptxwidth !== 0 && pptxheight !== 0) {' +
+            '     Reveal.initialize({' +
+            '       width: pptxwidth,' +
+            '       height: pptxheight,' +
+            '     });' +
+            '    } else {' +
+            '     Reveal.initialize();' +
+            '    }' +
+            '</script>' +
+            '</body>' +
+            '</html>';
+          }
+          //request.log('revealSlides: ' + revealSlides);
+          //console.log(revealSlides);
+          reply(revealSlides);
+        }).catch(function(error) {
+          request.log('error', error);
+          //console.log(error);
+          reply(boom.badImplementation());
+        })
+      });
   },
 
   //Get SCORM version
@@ -343,12 +405,10 @@ module.exports = {
     });
   },
 
-
   //Get PDF from URL or return NOT FOUND
   getPDF: function(request, reply) {
     let id = request.params.id;
     let url = Microservices.pdf.uri + '/exportReveal/' + id + '?fullHTML=true';
-
 
     //let md5sum = crypto.createHash('md5');
     //md5sum.update(url);
@@ -380,8 +440,29 @@ module.exports = {
     });
 
     decktape.on('close', (code) => {
-      //console.log('FILENAME: ' + filename);
       reply.file(filename).header('Content-Disposition', 'attachment; filename=' + outputFilename).header('Content-Type', 'application/pdf');
+      //console.log('FILENAME: ' + filename);
+      /*getMetadata(id, function(metadata) {
+        let contributor_string = '';
+        for (let i = 0; i < metadata.contributors.length; i++) {
+          contributor_string += metadata.contributors[i];
+          if (i == metadata.contributors.length - 1 ) {
+            contributor_string += ',';
+          }
+        }
+        ep.open().then( () => { ep.writeMetadata(filename,
+          {
+              'XMP-dc:Creator': metadata.author,
+              'XMP-dc:Contributor': contributor_string,
+              'XMP-dc:Rights' : 'http://creativecommons.org/licenses/by/sa',
+              'XMP-dc:Identifier': Microservices.platform.uri + '/Presentation/' + id,
+              'XMP-xmp:Creator Tool' : Microservices.platform.uri
+          },
+          ['overwrite_original']).then( () => {
+            ep.close();
+            reply.file(filename).header('Content-Disposition', 'attachment; filename=' + outputFilename).header('Content-Type', 'application/pdf');
+        })});
+      });*/
     });
 
   },
