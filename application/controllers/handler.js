@@ -68,7 +68,7 @@ let getMetadata = function(id, callback) {
 module.exports = {
 
   getOfflineHTML: function(request, reply) {
-    let req_path = '/exportReveal/' + request.params.id + '?fullHTML=true';
+    let req_path = '/exportReveal/' + request.params.id + '?fullHTML=true&licensing=true';
     if (request.query.theme) {
       let theme = request.query.theme;
       req_path = req_path + '&theme=' + theme;
@@ -109,68 +109,97 @@ module.exports = {
   },
 
   getEPub: function(request, reply) {
-    let req_path = '/deck/' + request.params.id + '/slides';
-    req_path = Microservices.deck.uri + req_path;
+    getMetadata(request.params.id, function(metadata) {
 
-    rp(req_path).then(function(body) {
-      let deckTree = JSON.parse(body);
-      let slides = [];
-      if (deckTree !== '') {
-        //console.log('deckTree is non-empty: ' + deckTree.children.length);
-        for (let i = 0; i < deckTree.children.length; i++) {
-          let slide = deckTree.children[i];
+      let copyright_slide = '<div class=\"pptx2html\" id=\"87705\" style=\"position: relative; width: 960px; height: 720px;\"><div _id=\"3\" _idx=\"1\" _name=\"Content Placeholder 2\" _type=\"body\" class=\"block content v-up context-menu-disabled\" id=\"65624\" style=\"position: absolute; top: 58.90356699625651px; left: 69.00000746532153px; width: 828px; height: 456.833px; z-index: 23520; cursor: auto;\" tabindex=\"0\"><p style=\"text-align: center;\" id=\"93898\">Author: SLIDEWIKI_AUTHOR</p><p style=\"text-align: center;\" id=\"10202\">Contributors:&nbsp;SLIDEWIKI_CONTRIBUTORS</p><p style=\"text-align: center;\" id=\"38083\">Licenced under the Creative Commons Attribution ShareAlike licence (<a href=\"http://creativecommons.org/licenses/by-sa/4.0/\" id=\"62598\">CC-BY-SA</a>)</p><p style=\"text-align: center;\" id=\"96218\">This deck was created using&nbsp;<a href=\"http://slidewiki.org\" id=\"40974\">SlideWiki</a>.</p><div class=\"h-left\" id=\"63022\">&nbsp;</div></div></div>';
+      let contributor_string = '';
+      for (let i = 0; i < metadata.contributors.length; i++) {
+        contributor_string += metadata.contributors[i];
+        if (i < metadata.contributors.length - 1) {
+          contributor_string += ',';
+        }
+      }
+      copyright_slide = copyright_slide.replace('SLIDEWIKI_CONTRIBUTORS', contributor_string).replace('SLIDEWIKI_AUTHOR', metadata.author);
+
+      let author_string = metadata.author;
+      if (metadata.contributors.length > 0) {
+        author_string += ',';
+      }
+      for (let i = 0; i < metadata.contributors.length; i++) {
+        author_string += metadata.contributors[i];
+        if (i < metadata.contributors.length - 1) {
+          author_string += ',';
+        }
+      }
+
+      let req_path = '/deck/' + request.params.id + '/slides';
+      req_path = Microservices.deck.uri + req_path;
+
+      rp(req_path).then(function(body) {
+        let deckTree = JSON.parse(body);
+        let slides = [];
+        if (deckTree !== '') {
+          //console.log('deckTree is non-empty: ' + deckTree.children.length);
+          for (let i = 0; i < deckTree.children.length; i++) {
+            let slide = deckTree.children[i];
+            let slideContent = {
+              data: slide.content
+            };
+            slides.push(slideContent);
+          }
           let slideContent = {
-            data: slide.content
+            data: copyright_slide
           };
           slides.push(slideContent);
         }
-      }
-      let css = 'div {' +
-          '    font-size: 12pt!important;' +
-          '}' +
-          'span {' +
-          '    font-size: 12pt!important;' +
-          '}' +
-          'div font {' +
-          '    font-size: inherit;' +
-          '}' +
-          '.epub-author {' +
-          '    color: #555;' +
-          '}' +
-          '.epub-link {' +
-          '    margin-bottom: 30px;' +
-          '}' +
-          '.epub-link a {' +
-          '    color: #666;' +
-          '    font-size: 90%;' +
-          '}' +
-          '.toc-author {' +
-          '    font-size: 90%;' +
-          '    color: #555;' +
-          '}' +
-          '.toc-link {' +
-          '    color: #999;' +
-          '    font-size: 85%;' +
-          '    display: block;' +
-          '}' +
-          'hr {' +
-          '    border: 0;' +
-          '    border-bottom: 1px solid #dedede;' +
-          '    margin: 60px 10%;' +
-          '}';
-      var option = {
-        title: 'SlideWiki Deck ' + request.params.id, // *Required, title of the book.
-        author: 'SlideWiki Author', // *Required, name of the author.
-        css: css,
-        content: slides
-      };
-      let filename = 'slidewiki-deck-' + request.params.id + '.epub';
+        let css = 'div {' +
+            '    font-size: 12pt!important;' +
+            '}' +
+            'span {' +
+            '    font-size: 12pt!important;' +
+            '}' +
+            'div font {' +
+            '    font-size: inherit;' +
+            '}' +
+            '.epub-author {' +
+            '    color: #555;' +
+            '}' +
+            '.epub-link {' +
+            '    margin-bottom: 30px;' +
+            '}' +
+            '.epub-link a {' +
+            '    color: #666;' +
+            '    font-size: 90%;' +
+            '}' +
+            '.toc-author {' +
+            '    font-size: 90%;' +
+            '    color: #555;' +
+            '}' +
+            '.toc-link {' +
+            '    color: #999;' +
+            '    font-size: 85%;' +
+            '    display: block;' +
+            '}' +
+            'hr {' +
+            '    border: 0;' +
+            '    border-bottom: 1px solid #dedede;' +
+            '    margin: 60px 10%;' +
+            '}';
 
-      new ePub(option, filename).promise.then(function() {
-        reply.file(filename).header('Content-Disposition', 'attachment; filename=' + filename).header('Content-Type', 'application/epub+zip');
-      }, function(err) {
-        request.log(err);
-        reply(boom.badImplementation());
+        var option = {
+          title: metadata.title ? metadata.title : 'SlideWiki Deck ' + request.params.id, // *Required, title of the book.
+          author: author_string ? author_string : 'SlideWiki Author', // *Required, name of the author.
+          includeDTDEvenInVersion3: true,
+          css: css,
+          content: slides
+        };
+        let filename = 'slidewiki-deck-' + request.params.id + '.epub';
+        new ePub(option, filename).promise.then(function() {
+          reply.file(filename).header('Content-Disposition', 'attachment; filename=' + filename).header('Content-Type', 'application/epub+zip');
+        }, function(err) {
+          request.log(err);
+          reply(boom.badImplementation());
+        });
       });
     });
   },
@@ -196,7 +225,7 @@ module.exports = {
     //console.log('req_path: ' + req_path);
     getMetadata(request.params.id, function(metadata) {
       //"title": "Copyright and Licensing",
-      let copyright_slide = '<div class=\"pptx2html\" id=\"87705\" style=\"position: relative; width: 960px; height: 720px;\"><div _id=\"3\" _idx=\"1\" _name=\"Content Placeholder 2\" _type=\"body\" class=\"block content v-up context-menu-disabled\" id=\"65624\" style=\"position: absolute; top: 58.90356699625651px; left: 69.00000746532153px; width: 828px; height: 456.833px; z-index: 23520; cursor: auto;\" tabindex=\"0\"><p style=\"text-align: center;\" id=\"93898\">Author: SLIDEWIKI_AUTHOR</p><p //style=\"text-align: center;\" id=\"10202\">Contributors:&nbsp;SLIDEWIKI_CONTRIBUTORS</p><p style=\"text-align: center;\" id=\"38083\">Licenced under the Creative Commons Attribution ShareAlike licence (<a href=\"http://creativecommons.org/licenses/by-sa/4.0/\" id=\"62598\">CC-BY-SA</a>)</p><p style=\"text-align: center;\" id=\"96218\">This deck was created using&nbsp;<a href=\"http://slidewiki.org\" id=\"40974\">SlideWiki</a>.</p><div class=\"h-left\" id=\"63022\">&nbsp;</div></div></div>';
+      let copyright_slide = '<div class=\"pptx2html\" id=\"87705\" style=\"position: relative; width: 960px; height: 720px;\"><div _id=\"3\" _idx=\"1\" _name=\"Content Placeholder 2\" _type=\"body\" class=\"block content v-up context-menu-disabled\" id=\"65624\" style=\"position: absolute; top: 58.90356699625651px; left: 69.00000746532153px; width: 828px; height: 456.833px; z-index: 23520; cursor: auto;\" tabindex=\"0\"><p style=\"text-align: center;\" id=\"93898\">Author: SLIDEWIKI_AUTHOR</p><p style=\"text-align: center;\" id=\"10202\">Contributors:&nbsp;SLIDEWIKI_CONTRIBUTORS</p><p style=\"text-align: center;\" id=\"38083\">Licenced under the Creative Commons Attribution ShareAlike licence (<a href=\"http://creativecommons.org/licenses/by-sa/4.0/\" id=\"62598\">CC-BY-SA</a>)</p><p style=\"text-align: center;\" id=\"96218\">This deck was created using&nbsp;<a href=\"http://slidewiki.org\" id=\"40974\">SlideWiki</a>.</p><div class=\"h-left\" id=\"63022\">&nbsp;</div></div></div>';
       let contributor_string = '';
       for (let i = 0; i < metadata.contributors.length; i++) {
         contributor_string += metadata.contributors[i];
