@@ -196,7 +196,7 @@ module.exports = {
     //console.log('req_path: ' + req_path);
     getMetadata(request.params.id, function(metadata) {
       //"title": "Copyright and Licensing",
-      let copyright_slide = "<div class=\"pptx2html\" id=\"87705\" style=\"position: relative; width: 960px; height: 720px;\"><div _id=\"3\" _idx=\"1\" _name=\"Content Placeholder 2\" _type=\"body\" class=\"block content v-up context-menu-disabled\" id=\"65624\" style=\"position: absolute; top: 58.90356699625651px; left: 69.00000746532153px; width: 828px; height: 456.833px; z-index: 23520; cursor: auto;\" tabindex=\"0\"><p style=\"text-align: center;\" id=\"93898\">Author: SLIDEWIKI_AUTHOR</p><p //style=\"text-align: center;\" id=\"10202\">Contributors:&nbsp;SLIDEWIKI_CONTRIBUTORS</p><p style=\"text-align: center;\" id=\"38083\">Licenced under the Creative Commons Attribution ShareAlike licence (<a href=\"http://creativecommons.org/licenses/by-sa/4.0/\" id=\"62598\">CC-BY-SA</a>)</p><p style=\"text-align: center;\" id=\"96218\">This deck was created using&nbsp;<a href=\"http://slidewiki.org\" id=\"40974\">SlideWiki</a>.</p><div class=\"h-left\" id=\"63022\">&nbsp;</div></div></div>";
+      let copyright_slide = '<div class=\"pptx2html\" id=\"87705\" style=\"position: relative; width: 960px; height: 720px;\"><div _id=\"3\" _idx=\"1\" _name=\"Content Placeholder 2\" _type=\"body\" class=\"block content v-up context-menu-disabled\" id=\"65624\" style=\"position: absolute; top: 58.90356699625651px; left: 69.00000746532153px; width: 828px; height: 456.833px; z-index: 23520; cursor: auto;\" tabindex=\"0\"><p style=\"text-align: center;\" id=\"93898\">Author: SLIDEWIKI_AUTHOR</p><p //style=\"text-align: center;\" id=\"10202\">Contributors:&nbsp;SLIDEWIKI_CONTRIBUTORS</p><p style=\"text-align: center;\" id=\"38083\">Licenced under the Creative Commons Attribution ShareAlike licence (<a href=\"http://creativecommons.org/licenses/by-sa/4.0/\" id=\"62598\">CC-BY-SA</a>)</p><p style=\"text-align: center;\" id=\"96218\">This deck was created using&nbsp;<a href=\"http://slidewiki.org\" id=\"40974\">SlideWiki</a>.</p><div class=\"h-left\" id=\"63022\">&nbsp;</div></div></div>';
       let contributor_string = '';
       for (let i = 0; i < metadata.contributors.length; i++) {
         contributor_string += metadata.contributors[i];
@@ -284,16 +284,16 @@ module.exports = {
             '</script>' +
             '</body>' +
             '</html>';
-          }
-          //request.log('revealSlides: ' + revealSlides);
-          //console.log(revealSlides);
-          reply(revealSlides);
-        }).catch(function(error) {
-          request.log('error', error);
-          //console.log(error);
-          reply(boom.badImplementation());
-        })
+        }
+        //request.log('revealSlides: ' + revealSlides);
+        //console.log(revealSlides);
+        reply(revealSlides);
+      }).catch(function(error) {
+        request.log('error', error);
+        //console.log(error);
+        reply(boom.badImplementation());
       });
+    });
   },
 
   //Get SCORM version
