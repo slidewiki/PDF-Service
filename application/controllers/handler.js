@@ -57,6 +57,9 @@ let getMetadata = function(id, callback) {
           usernames.push(user_entry.username);
         }
       }
+      if (deck_metadata.revisions.theme) {
+        results.theme = deck_metadata.revisions.theme;
+      }
       results.contributors = usernames;
       console.log(JSON.stringify(results));
       callback(results);
@@ -234,6 +237,12 @@ module.exports = {
         }
       }
       copyright_slide = copyright_slide.replace('SLIDEWIKI_CONTRIBUTORS', contributor_string).replace('SLIDEWIKI_AUTHOR', metadata.author);
+
+      if (theme === '' && metadata.theme) {
+        theme = metadata.theme;
+        req_path += limit !== '' ? '&' : '?';
+        req_path += 'theme=' + theme;
+      }
       rp(req_path).then(function(body) {
         let deckTree = JSON.parse(body);
         //request.log(deckTree);
