@@ -116,6 +116,7 @@ module.exports = {
         title: 'SlideWiki Deck ' + request.params.id, // *Required, title of the book.
         author: 'SlideWiki Author', // *Required, name of the author.
         css: css,
+        includeDTDEvenInVersion3: true,
         content: slides
       };
       let filename = 'slidewiki-deck-' + request.params.id + '.epub';
