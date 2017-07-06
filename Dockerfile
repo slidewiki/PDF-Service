@@ -18,6 +18,8 @@ RUN chmod 700 ./decktape/bin/phantomjs
 ADD ./application/package.json ./
 RUN npm install --production
 
+RUN npm install git+https://github.com/athird/epub-gen.git
+
 ADD ./application/ ./
 
 # ----------------- #
