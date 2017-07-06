@@ -36,6 +36,7 @@
     "request-promise-native": "^1.0.3",
     "reveal": "^0.0.4",
     "adm-zip": "^0.4.7",
+    "epub-gen": "^0.0.17",
     "fs-extra": "^1.0.0",
     "website-scraper":"^1.2.2"
   },
