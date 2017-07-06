@@ -62,12 +62,12 @@ module.exports = {
 
       // Sync:
       try {
-          fs.copySync(folderName+'/img/cursor_bring_to_front.png', folderName+'/img/cursor_bring_to_front_1.png');
-          fs.copySync(folderName+'/img/cursor_drag_arrow.png', folderName+'/img/cursor_drag_arrow_1.png');
-          fs.copySync(folderName+'/img/cursor_remove.png', folderName+'/img/cursor_remove_1.png');
-          fs.copySync(folderName+'/img/cursor_resize_arrow.png', folderName+'/img/cursor_resize_arrow_1.png');
-          fs.copySync(folderName+'/img/cursor_send_to_back.png', folderName+'/img/cursor_send_to_back_1.png');
-          fs.copySync(folderName+'/img/logo_full.png', folderName+'/img/logo_full_1.png');
+        fs.copySync(folderName+'/img/cursor_bring_to_front.png', folderName+'/img/cursor_bring_to_front_1.png');
+        fs.copySync(folderName+'/img/cursor_drag_arrow.png', folderName+'/img/cursor_drag_arrow_1.png');
+        fs.copySync(folderName+'/img/cursor_remove.png', folderName+'/img/cursor_remove_1.png');
+        fs.copySync(folderName+'/img/cursor_resize_arrow.png', folderName+'/img/cursor_resize_arrow_1.png');
+        fs.copySync(folderName+'/img/cursor_send_to_back.png', folderName+'/img/cursor_send_to_back_1.png');
+        fs.copySync(folderName+'/img/logo_full.png', folderName+'/img/logo_full_1.png');
         //console.log('success!');
       } catch (err) {
         console.error(err);
