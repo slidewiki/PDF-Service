@@ -14,10 +14,8 @@ const boom = require('boom'), //Boom gives us some predefined http codes and pro
   Microservices = require('../configs/microservices'),
   zip = require('adm-zip'),
   ePub = require('epub-gen'),
-  scraper = require('website-scraper');//,
+  scraper = require('website-scraper');
   //Reveal = require('reveal');
-
-
 
 module.exports = {
 
@@ -32,9 +30,15 @@ module.exports = {
 
     scraper.scrape({
       urls: [
+        {url: Microservices.platform.uri + '/assets/images/cursor_bring_to_front.png', filename: 'cursor_bring_to_front.png'},
+        {url: Microservices.platform.uri + '/assets/images/cursor_drag_arrow.png', filename: 'cursor_drag_arrow.png'},
+        {url: Microservices.platform.uri + '/assets/images/cursor_remove.png', filename: 'cursor_remove.png'},
+        {url: Microservices.platform.uri + '/assets/images/cursor_resize_arrow.png', filename: 'cursor_resize_arrow.png'},
+        {url: Microservices.platform.uri + '/assets/images/cursor_send_to_back.png', filename: 'cursor_send_to_back.png'},
+        {url: Microservices.platform.uri + '/assets/images/logo_full.png', filename: 'logo_full.png'},
         req_path
-        //{url: 'http://nodejs.org/about', filename: 'about.html'},
       ],
+
       directory: 'exportedOfflineHTML-' + request.params.id,
       subdirectories: [
         {directory: 'img', extensions: ['.jpg', '.png', '.svg']},
@@ -45,20 +49,44 @@ module.exports = {
         {selector: 'img', attr: 'src'},
         {selector: 'link[rel="stylesheet"]', attr: 'href'},
         {selector: 'script', attr: 'src'}
-      ]
+      ],
+      request:{
+        followRedirect: true,
+        followAllRedirects: true
+      }
 
     }).then(function (result) {
-      console.log(result);
+      //console.log(result);
       let filename = 'slidewiki-deck-' + request.params.id + '.zip';
       let folderName = 'exportedOfflineHTML-' + request.params.id;
+
+      // Sync:
+      try {
+        fs.copySync(folderName+'/img/cursor_bring_to_front.png', folderName+'/img/cursor_bring_to_front_1.png');
+        fs.copySync(folderName+'/img/cursor_drag_arrow.png', folderName+'/img/cursor_drag_arrow_1.png');
+        fs.copySync(folderName+'/img/cursor_remove.png', folderName+'/img/cursor_remove_1.png');
+        fs.copySync(folderName+'/img/cursor_resize_arrow.png', folderName+'/img/cursor_resize_arrow_1.png');
+        fs.copySync(folderName+'/img/cursor_send_to_back.png', folderName+'/img/cursor_send_to_back_1.png');
+        fs.copySync(folderName+'/img/logo_full.png', folderName+'/img/logo_full_1.png');
+        //console.log('success!');
+      } catch (err) {
+        console.error(err);
+      }
+
       let zipFile = new zip();
       zipFile.addLocalFolder(folderName);
-      zipFile.writeZip(filename);
-      reply.file(filename).header('Content-Disposition', 'attachment; filename=' + filename).header('Content-Type', 'application/zip');
+      //zipFile.writeZip(filename);
+      zipFile.toBuffer(function(buffer){
+        reply(buffer).header('Content-Disposition', 'attachment; filename=' + filename).header('Content-Type', 'application/zip');
+
+      }, function(failure) {
+        console.log(failure);
+      }
+    );
+    //  reply.file(filename).header('Content-Disposition', 'attachment; filename=' + filename).header('Content-Type', 'application/zip');
     }).catch(function(err){
       console.log(err);
     });
-
 
   },
 
@@ -217,6 +245,8 @@ module.exports = {
           '     Reveal.initialize({' +
           '       width: pptxwidth,' +
           '       height: pptxheight,' +
+          '       controls: false,' +
+          '       progress: false,' +
           '     });' +
           '    } else {' +
           '     Reveal.initialize();' +
@@ -400,8 +430,8 @@ module.exports = {
       if (request.path.includes('exportOfflineHTML')) {
         //let md5sum = crypto.createHash('md5');
         //md5sum.update(url);
-        let filename = 'slidewiki-deck-' + id + '.zip';//md5sum.digest('base64') + '.pdf';
-        fs.unlinkSync(filename);
+        //let filename = 'slidewiki-deck-' + id + '.zip';//md5sum.digest('base64') + '.pdf';
+        //fs.unlinkSync(filename);
         fs.removeSync('exportedOfflineHTML-' + id);
       }
       if (request.path.includes('exportSCORM')) {
