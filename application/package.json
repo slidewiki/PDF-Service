@@ -37,6 +37,8 @@
     "reveal": "^0.0.4",
     "adm-zip": "^0.4.7",
     "fs-extra": "^1.0.0",
+    "dist-exiftool": "10.53.0",
+    "node-exiftool": "2.2.0",
     "website-scraper":"^1.2.2"
   },
   "engines": {
