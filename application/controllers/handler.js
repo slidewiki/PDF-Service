@@ -42,6 +42,7 @@ let getMetadata = function(id, callback) {
       method: 'POST',
       uri: usernames_req_url,
       body: contributors,
+      followAllRedirects: true,
       json: true
     };
     console.log(JSON.stringify(users_options));
@@ -185,7 +186,7 @@ module.exports = {
           };
           slides.push(slideContent);
         }
-        
+
         let css = 'div {' +
             '    font-size: 12pt!important;' +
             '}' +
