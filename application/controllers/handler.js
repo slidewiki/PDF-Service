@@ -185,7 +185,7 @@ module.exports = {
           };
           slides.push(slideContent);
         }
-
+        
         let css = 'div {' +
             '    font-size: 12pt!important;' +
             '}' +
