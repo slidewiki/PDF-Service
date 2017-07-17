@@ -15,8 +15,10 @@ RUN git clone --depth 1 https://github.com/astefanutti/decktape.git
 ADD http://astefanutti.github.io/decktape/downloads/phantomjs-linux-ubuntu16-x86-64 ./decktape/bin/phantomjs
 RUN chmod 700 ./decktape/bin/phantomjs
 
+
 ADD ./application/package.json ./
 RUN npm install --production
+RUN npm install git+https://github.com/athird/epub-gen.git
 
 RUN npm install git+https://github.com/athird/epub-gen.git
 
