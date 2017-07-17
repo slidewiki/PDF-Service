@@ -11,5 +11,6 @@ pdfservice:
     - SERVICE_URL_PLATFORM=https://platform.experimental.slidewiki.org
     - SERVICE_URL_DECK=https://deckservice.experimental.slidewiki.org
     - SERVICE_URL_PDF=https://pdfservice.experimental.slidewiki.org
+    - SERVICE_URL_USER=https://userservice.experimental.slidewiki.org
     - DATABASE_PORT=27017
     - DATABASE_URL=mongodb # use a url or the name, defined in the docker-compose file
