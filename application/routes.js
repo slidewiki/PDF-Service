@@ -16,7 +16,7 @@ module.exports = function(server) {
     config: {
       validate: {
         params: {
-          id : Joi.string().regex(/^[0-9]+$/).required().description('SlideWiki deck id')
+          id : Joi.string().regex(/^[0-9]+(-[0-9]+)?$/).required().description('SlideWiki deck id')
         },
         query: {
           command : Joi.string().valid('automatic', 'bespoke', 'csss', 'deck', 'dzslides', 'flowtime', 'generic', 'impress', 'remark', 'reveal', 'shower', 'slide').description('Decktape slide format plugin'),
@@ -37,7 +37,7 @@ module.exports = function(server) {
     config: {
       validate: {
         params: {
-          id : Joi.string().regex(/^[0-9]+$/).required().description('SlideWiki deck id')
+          id : Joi.string().regex(/^[0-9]+(-[0-9]+)?$/).required().description('SlideWiki deck id')
         },
         query: {
           theme : Joi.string().optional().valid('blood', 'night', 'beige', 'league', 'serif', 'solarized', 'white', 'black', 'moon', 'simple', 'epub')
@@ -55,7 +55,7 @@ module.exports = function(server) {
     config: {
       validate: {
         params: {
-          id : Joi.string().regex(/^[0-9]+$/).required().description('SlideWiki deck id')
+          id : Joi.string().regex(/^[0-9]+(-[0-9]+)?$/).required().description('SlideWiki deck id')
         }
       },
       tags: ['api'],
@@ -71,7 +71,7 @@ module.exports = function(server) {
 
       validate: {
         params: {
-          id : Joi.string().regex(/^[0-9]+$/).required().description('SlideWiki deck id')
+          id : Joi.string().regex(/^[0-9]+(-[0-9]+)?$/).required().description('SlideWiki deck id')
         },
         query: {
           version : Joi.string().valid('1.2', '2', '3', '4').required().description('Scorm Version')
@@ -97,7 +97,8 @@ module.exports = function(server) {
           limit: Joi.string().optional(),
           offset: Joi.string().optional(),
           fullHTML: Joi.string().optional(),
-          theme : Joi.string().optional().valid('blood', 'night', 'beige', 'league', 'serif', 'solarized', 'white', 'black', 'moon', 'simple', 'epub')
+          theme : Joi.string().optional().valid('blood', 'night', 'beige', 'league', 'serif', 'solarized', 'white', 'black', 'moon', 'simple', 'epub'),
+          licensing: Joi.string().optional()
         }
       },
       tags: ['api'],
