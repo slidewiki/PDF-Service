@@ -173,11 +173,11 @@ module.exports = {
         let deckTree = JSON.parse(body);
         let slides = [];
         if (deckTree !== '') {
-          //console.log('deckTree is non-empty: ' + deckTree.children.length);
           for (let i = 0; i < deckTree.children.length; i++) {
             let slide = deckTree.children[i];
             let slideContent = {
               data: slide.content
+
             };
             slides.push(slideContent);
           }
@@ -238,7 +238,6 @@ module.exports = {
       });
     });
   },
-
 
   // Get given deck as reveal.js, or return NOT FOUND
   getReveal: function(request, reply) {
