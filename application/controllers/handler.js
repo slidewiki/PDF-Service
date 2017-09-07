@@ -488,7 +488,7 @@ module.exports = {
     let size = request.query.slideSize ? request.query.slideSize : '';
     let slides = request.query.slides ? request.query.slides : '';
     let outputFilename = request.query.pdf ? request.query.pdf : 'slidewiki-deck-' + id + '.pdf';
-    let decktapeArgs = ['decktape/decktape.js'];
+    let decktapeArgs = ['node_modules/decktape/decktape.js', '--no-sandbox'];
     if ( size !== '') {
       decktapeArgs.push('--size', size);
     }
@@ -499,7 +499,7 @@ module.exports = {
     decktapeArgs.push(url);
     decktapeArgs.push(filename);
 
-    let decktape = spawn('decktape/bin/phantomjs', decktapeArgs);
+    let decktape = spawn('node', decktapeArgs);//spawn('decktape/bin/phantomjs', decktapeArgs);
     console.log(decktapeArgs);
     decktape.stdout.on('data', (data) => {
       console.log(`stdout: ${data}`);
@@ -533,6 +533,7 @@ module.exports = {
             reply.file(filename).header('Content-Disposition', 'attachment; filename=' + outputFilename).header('Content-Type', 'application/pdf');
         })});
       });*/
+      //decktape.kill();
     });
 
   },
