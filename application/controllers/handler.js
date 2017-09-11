@@ -533,7 +533,7 @@ module.exports = {
             reply.file(filename).header('Content-Disposition', 'attachment; filename=' + outputFilename).header('Content-Type', 'application/pdf');
         })});
       });*/
-      //decktape.kill();
+      decktape.kill();
     });
 
   },

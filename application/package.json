@@ -41,7 +41,7 @@
     "dist-exiftool": "10.53.0",
     "node-exiftool": "2.2.0",
     "website-scraper":"^1.2.2",
-    "decktape":"^2.0.3"
+    "decktape":"git+https://github.com/athird/decktape.git"
   },
   "engines": {
     "node": ">=6.9.0"
