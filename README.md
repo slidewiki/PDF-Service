@@ -7,7 +7,7 @@
 [![LinesOfCode](https://img.shields.io/badge/LOC-676-lightgrey.svg)](https://github.com/slidewiki/microservice-template/blob/master/application/package.json)
 [![Coverage Status](https://coveralls.io/repos/github/slidewiki/PDF-Service/badge.svg?branch=master)](https://coveralls.io/github/slidewiki/PDF-Service?branch=master)
 
-This repository contains a NodeJS based Microservice of the Slidewiki 2.0 project to generate PDFs from presentations.
+This repository contains a NodeJS based Microservice of the Slidewiki 2.0 project to generate PDFs, ePubs and offline HTML packages from presentations in the SlideWiki platform.
 
 ### Install NodeJS ###
 ---
