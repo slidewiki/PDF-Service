@@ -15,6 +15,8 @@ RUN apt-get install -y git libsqlite3-0 libfontconfig1 libpangocairo-1.0-0 libX1
 #ADD http://astefanutti.github.io/decktape/downloads/phantomjs-linux-ubuntu16-x86-64 ./decktape/bin/phantomjs
 #RUN chmod 700 ./decktape/bin/phantomjs
 
+RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64.deb
+RUN dpkg -i dumb-init_*.deb
 
 ADD ./application/package.json ./
 RUN npm install --production
@@ -40,5 +42,5 @@ RUN apt-get autoremove -y && apt-get -y clean && \
 # -------- #
 #   Run!   #
 # -------- #
-
-CMD npm start
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["npm", "start"]
