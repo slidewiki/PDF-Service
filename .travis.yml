@@ -11,8 +11,7 @@ cache:
   directories:
   - "./application/node_modules"
 before_install:
-#- if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] ; then
-- ./travis_scripts/install_compose.sh #; fi
+- if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] ; then ./travis_scripts/install_compose.sh ; fi
 - cd application
 script:
 - npm run lint
