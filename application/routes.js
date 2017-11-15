@@ -97,6 +97,7 @@ module.exports = function(server) {
           limit: Joi.string().optional(),
           offset: Joi.string().optional(),
           fullHTML: Joi.string().optional(),
+          pdfFormatting: Joi.string().optional(),
           theme : Joi.string().optional().valid('blood', 'night', 'beige', 'league', 'serif', 'solarized', 'white', 'black', 'moon', 'simple', 'epub'),
           licensing: Joi.string().optional()
         }
