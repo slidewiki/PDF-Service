@@ -307,7 +307,7 @@ module.exports = {
           'top: \'0\',' +
         '}';
         let revealSlides = '';
-
+        let pdfFormattingString;
         if (pdfFormatting) {
           pdfFormattingString = '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/print/pdf.css">\n';
         } else {
