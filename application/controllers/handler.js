@@ -14,7 +14,6 @@ const boom = require('boom'), //Boom gives us some predefined http codes and pro
   Microservices = require('../configs/microservices'),
   zip = require('adm-zip'),
   ePub = require('epub-gen'),
-
   //exiftool = require('node-exiftool'),
   //exiftoolBin = require('dist-exiftool'),
   //ep = new exiftool.ExiftoolProcess(exiftoolBin),
@@ -245,8 +244,9 @@ module.exports = {
     let req_path = '/deck/' + request.params.id + '/slides';
     let limit = request.query.limit ? 'limit=' + request.query.limit : '';
     let offset = request.query.offset ? 'offset=' + request.query.offset : '';
-    let theme = request.query.theme ? request.query.theme : '';
+    let theme = request.query.theme ? request.query.theme : 'default';
     let licensing = request.query.licensing ? request.query.licensing : 'false';
+    let pdfFormatting = request.query.pdfFormatting ? true : false;
     if (limit !== '' && offset !== '') {
       req_path += '?' + limit + '&' + offset;
     } else if (limit !== '') {
@@ -301,22 +301,47 @@ module.exports = {
           slides = '<section/>';
         }
         let defaultCSS = '{' +
-          'height: \'100%\',' +
+        //  'height: \'auto\',' +
+          //'max-width: \'100%\',' +
           'position: \'absolute\',' +
           'top: \'0\',' +
         '}';
         let revealSlides = '';
+
+        if (pdfFormatting) {
+          pdfFormattingString = '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/print/pdf.css">\n';
+        } else {
+          pdfFormattingString = '';
+        }
         if (request.query.fullHTML) {
           revealSlides += '<html>\n' +
           '<head>\n' +
           '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/reveal.css">\n' +
           '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/theme/' + theme + '.css">\n' +
+          pdfFormattingString +
+          '<style>\n' +
+          'img {\n' +
+          //'height: auto; /* Make sure images with WordPress-added height and width attributes are scaled correctly */' +
+          'max-width: 100%; /* Prevent images from overflowing their boundaries */' +
+          '}' +
+          //'section {\n' +
+          //'height: 100%; ' +
+          //'max-width: 100%;' +
+          //'}' +
+          /*'.present {' +
+            'transform: scale(0.59248, 0.59248);' +
+            'transform-origin: left top;' +
+          '}'+*/
+          '</style>\n' +
           '</head>\n' +
-          '<body>\n';
+          '<body>\n'; // height="960" width="700">\n';
+          if (pdfFormatting) {
+            revealSlides += '<script   src="https://code.jquery.com/jquery-3.2.1.min.js"   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="   crossorigin="anonymous"></script>\n';
+          }
         }
         revealSlides += '<div>\n'+
-        '          <div class="reveal" className="reveal">\n' +// style=' + defaultCSS + '>\n' +
-        '            <div class="slides" className="slides">\n';
+        '          <div class="reveal" className="reveal" style=' + defaultCSS + '>' +// style=' + defaultCSS + '>\n' +
+        '            <div class="slides" className="slides">\n'; //style="transform: scale(0.59248, 0.59248); transform-origin: left top;"
         //console.log('revealSlides: ' + revealSlides);
 
         for (let i = 0; i < slides.length; i++) {
@@ -329,6 +354,16 @@ module.exports = {
           '        </div>';
         if (request.query.fullHTML) {
           revealSlides += '<script src="' + platform_path +'/custom_modules/reveal.js/js/reveal.js"></script>' +
+            '<script>' +
+            '    window.onload = function() {' +
+            '      var all = document.getElementsByTagName("div");' +
+            '      for(i=0; i < all.length; i++) {' +
+            '        if ($(all[i]).html().trim().length < 1) {' +
+            '          all[i].innerHTML="";' +
+            '        }' +
+            '        };' +
+            '    };' +
+            '</script>' +
             '<script>' +
             '    var pptxwidth = 0;' +
             '    var pptxheight = 0;' +
@@ -349,7 +384,11 @@ module.exports = {
             '       height: pptxheight,' +
             '     });' +
             '    } else {' +
-            '     Reveal.initialize();' +
+          //  '       Reveal.initialize();\n' +
+            '     Reveal.initialize({' +
+            '       width: \'100%\',' +
+            '       height: \'100%\',' +
+            '     });' +
             '    }' +
             '</script>' +
             '</body>' +
@@ -471,21 +510,21 @@ module.exports = {
       });
     }).catch(function(error) {
       request.log(error);
-      reply(boom.badImplementation());
+      reply(boom.badImplementation());//2480 3508
     });
   },
 
   //Get PDF from URL or return NOT FOUND
   getPDF: function(request, reply) {
     let id = request.params.id;
-    let url = Microservices.pdf.uri + '/exportReveal/' + id + '?fullHTML=true';
+    let url = Microservices.pdf.uri + '/exportReveal/' + id + '?fullHTML=true&pdfFormatting=true';
 
     //let md5sum = crypto.createHash('md5');
     //md5sum.update(url);
     let filename = 'slidewiki-deck-' + id + '.pdf';//md5sum.digest('base64') + '.pdf';
 
     let command = request.query.command ? request.query.command : 'reveal';
-    let size = request.query.slideSize ? request.query.slideSize : '';
+    let size = request.query.slideSize ? request.query.slideSize : '2880x2100';//3 * 960 x 700
     let slides = request.query.slides ? request.query.slides : '';
     let outputFilename = request.query.pdf ? request.query.pdf : 'slidewiki-deck-' + id + '.pdf';
     let decktapeArgs = ['node_modules/decktape/decktape.js', '--no-sandbox'];
