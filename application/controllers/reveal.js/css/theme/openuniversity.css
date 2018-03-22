@@ -1,0 +1,65 @@
+
+/* Assume all elements to have these characteristics unless specified otherwise*/
+
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,300,400,700);
+@import url(https://fonts.googleapis.com/css?family=Arimo:300italic,400italic,700italic,300,400,700);
+
+.reveal .slides section{
+    border-bottom: solid 20px #D6D34E;
+}
+
+/* Set the background images*/
+.reveal .slides section{
+    background-color: #ffffff;
+    background-image: url(/custom_modules/reveal.js/img/kmilogo.png), url(/custom_modules/reveal.js/img/oulogo.png);
+    background-repeat: no-repeat;
+    background-position: left bottom, right top;
+}
+
+/* Title page */
+/*.reveal .slides {
+  background-image: url(/custom_modules/reveal.js/img/outitlepage.png);
+  background-repeat: no-repeat;
+  background-position: center;
+}*/
+
+
+/* Set font defaults */
+.reveal{
+  color: #811519;
+  font-size: 30pt;
+  font-family: "Helvetica Neue", Helvetica, "Arimo", sans-serif;
+}
+
+.reveal h3{
+    text-align: left!important;
+    font-weight: bold;
+    color: rgb(27, 92, 129);
+}
+
+.reveal h4{
+  font-size: 30pt;
+  font-weight: normal;
+  color: rgb(206, 54, 60);
+}
+
+.reveal ul .li{
+  list-style-type:circle;
+  font-size: 30pt;
+}
+
+.reveal ul ul .li{
+  list-style-type:georgian;
+  font-size: 28pt;
+}
+
+.reveal ul ul ul .li{
+  list-style-type: square;
+  font-size: 26pt;
+}
+
+.reveal .slide-number{
+  font-family: Calibri, Arial, sans-serif;
+  font-size: 12pt;
+  color: rgb(137,137,137);
+}

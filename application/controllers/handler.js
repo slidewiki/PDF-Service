@@ -1,7 +1,3 @@
-/*
-Handles the requests by executing stuff and replying to the client. Uses promises to get stuff done.
-*/
-
 'use strict';
 
 const boom = require('boom'), //Boom gives us some predefined http codes and proper responses
@@ -14,6 +10,9 @@ const boom = require('boom'), //Boom gives us some predefined http codes and pro
   Microservices = require('../configs/microservices'),
   zip = require('adm-zip'),
   ePub = require('epub-gen'),
+  util = require('util'),
+  readFilePromise = util.promisify(fs.readFile),
+  path = require('path'),
   //exiftool = require('node-exiftool'),
   //exiftoolBin = require('dist-exiftool'),
   //ep = new exiftool.ExiftoolProcess(exiftoolBin),
@@ -256,6 +255,10 @@ module.exports = {
     }
     req_path = Microservices.deck.uri + req_path;
     let platform_path = Microservices.platform.uri;
+    let styles = '';
+    getCss(theme).then((css) => {
+      styles = css;
+    });
     //console.log('req_path: ' + req_path);
     getMetadata(request.params.id, function(metadata) {
       //"title": "Copyright and Licensing",
@@ -315,9 +318,9 @@ module.exports = {
         }
         if (request.query.fullHTML) {
           revealSlides += '<html>\n' +
-          '<head>\n' +
-          '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/reveal.css">\n' +
-          '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/theme/' + theme + '.css">\n' +
+          '<head>\n<style type="text/css">' + styles + '</style>' + 
+          // '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/reveal.css">\n' +
+          // '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/theme/' + theme + '.css">\n' +
           pdfFormattingString +
           '<style>\n' +
           'img {\n' +
@@ -607,3 +610,18 @@ module.exports = {
     }
   }
 };
+
+function getCss(theme){
+  // readFilePromise().then(() => {
+  // let css = '';
+  // let paths = [, ].map(readFilePromise);
+  let promises = [];
+  promises.push(readFilePromise(path.resolve(__dirname, 'reveal.js/css/reveal.css')));
+  promises.push(readFilePromise(path.resolve(__dirname, `reveal.js/css/theme/${theme}.css`)));
+
+  return Promise.all(promises).catch((err) => {
+    console.log('There was an error', err);
+  });
+
+
+}

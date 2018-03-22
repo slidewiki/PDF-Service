@@ -1,0 +1,18 @@
+
+.reveal h3{
+  font-family: 'Helvetica Neue', Helvetica, sans-serif;
+  font-size: 38pt;
+  color: rgb(191,191,191);
+  text-align: left;
+}
+
+.reveal p, .reveal li{
+  font-size: 25pt;
+}
+
+.reveal section{
+  background-color: #ffffff;
+  background-image: url(/custom_modules/reveal.js/img/ccimage.png), url(/custom_modules/reveal.js/img/odimadrid.png), url(/custom_modules/reveal.js/img/odilogo.png);
+  background-repeat: no-repeat;
+  background-position: left bottom, 10% 100%, right top;
+}

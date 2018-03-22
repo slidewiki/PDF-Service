@@ -1,0 +1,34 @@
+.reveal h3{
+  text-align: right;
+  background-color: #ff0000;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 24pt;
+  font-family: 'Helvetica', sans-serif;
+  background-image: url(/custom_modules/reveal.js/img/oegsmalllogo.png);
+  background-repeat: no-repeat;
+  height: 75px;
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
+  align-self: flex-end;
+}
+
+.reveal p, .reveal li{
+  font-size: 24pt;
+  list-style-type: square;
+}
+
+.reveal ul ul li{
+  font-size: 20pt;
+  list-style-type: circle;
+}
+
+.reveal ul ul ul li{
+  list-style-type: disc;
+}
+
+.reveal section{
+  border-bottom: solid 20px rgb(47,122,173);
+}
