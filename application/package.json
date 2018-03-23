@@ -36,6 +36,7 @@
     "request-promise-native": "^1.0.3",
     "reveal": "^0.0.4",
     "adm-zip": "^0.4.7",
+    "archiver": "^2.1.1",
     "epub-gen": "^0.0.17",
     "fs-extra": "^1.0.0",
     "dist-exiftool": "10.53.0",
