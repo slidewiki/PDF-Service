@@ -13,6 +13,7 @@ const boom = require('boom'), //Boom gives us some predefined http codes and pro
   rp = require('request-promise-native'),
   Microservices = require('../configs/microservices'),
   zip = require('adm-zip'),
+  archiver = require('archiver'),
   ePub = require('epub-gen'),
   //exiftool = require('node-exiftool'),
   //exiftoolBin = require('dist-exiftool'),
@@ -124,16 +125,33 @@ module.exports = {
         console.error(err);
       }
 
-      let zipFile = new zip();
-      zipFile.addLocalFolder(folderName);
+      let outputArchive = fs.createWriteStream(filename);
+      let archive = archiver('zip', {
+        zlib: {level: 9}
+      });
+      //let zipFile = new zip();
+      //zipFile.addLocalFolder(folderName);
       //zipFile.writeZip(filename);
-      zipFile.toBuffer(function(buffer){
-        reply(buffer).header('Content-Disposition', 'attachment; filename=' + filename).header('Content-Type', 'application/zip');
+      //zipFile.toBuffer(function(buffer){
+      outputArchive.on('close', function() {
+        reply.file(filename).header('Content-Disposition', 'attachment; filename=' + filename).header('Content-Type', 'application/zip');
+      });
 
-      }, function(failure) {
-        console.log(failure);
-      }
-    );
+      archive.on('warning', function(err) {
+        console.log('Archive warning ' + err);
+      });
+
+      archive.on('error', function(err) {
+        console.log('Archive error ' + err);
+      });
+
+      archive.pipe(outputArchive);
+      archive.directory(folderName, false);
+      archive.finalize();
+      //}, function(failure) {
+      //  console.log(failure);
+      //}
+    //);
     //  reply.file(filename).header('Content-Disposition', 'attachment; filename=' + filename).header('Content-Type', 'application/zip');
     }).catch(function(err){
       console.log(err);
@@ -460,10 +478,9 @@ module.exports = {
         }).pipe(file);
         file.on('finish', function() {
           file.close(function() {
-            let zfile1 = new zip(outputFilename);
-            zfile1.extractAllTo('exportedOfflineHTML-temp-' + id, /*overwrite*/true);
-            let zfile = new zip();
-            zfile.addLocalFolder('exportedOfflineHTML-temp-' +id );
+            let zfile = new zip(outputFilename);
+            zfile.extractAllTo('exportedOfflineHTML-temp-' + id, /*overwrite*/true);
+            //let zfile = new zip();
             let zipEntries = zfile.getEntries();
             let index=0;
             zipEntries.forEach(function(zipEntry) {
@@ -485,22 +502,53 @@ module.exports = {
             });
             template +='\n\t</resources>\n</manifest>';
               //console.log("template="+template);
-            zfile.addFile('imsmanifest.xml', template);
-
-            if(version === '1.2')
-              zfile.addLocalFolder('scorm1.2');
-            if(version === '2')
-              zfile.addLocalFolder('scorm2');
-            if(version === '3')
-              zfile.addLocalFolder('scorm3');
-            if(version === '4')
-              zfile.addLocalFolder('scorm4');
-
-            zfile.toBuffer( function(buffer) {
-              reply(buffer).header('Content-Disposition', 'attachment; filename=' + outputFilename).header('Content-Type', 'application/zip');
-            }, function(failure) {
-              reply(boom.badImplementation());
+            let outputArchive = fs.createWriteStream('temp-' + outputFilename);
+            let archive = archiver('zip', {
+              zlib: { level: 9}
             });
+
+            archive.on('warning', function(err) {
+              console.log('Archive warning ' + err);
+            });
+
+            archive.on('error', function(err) {
+              console.log('Archive error ' + err);
+            });
+
+            archive.pipe(outputArchive);
+            //zfile.addLocalFolder('exportedOfflineHTML-temp-' +id );
+            archive.directory('exportedOfflineHTML-temp-' + id + '/', false);
+            archive.append(template, { name: 'imsmanifest.xml'});
+            //zfile.addFile('imsmanifest.xml', template);
+
+            if(version === '1.2') {
+              archive.directory('scorm1.2', false);
+            }
+              //zfile.addLocalFolder('scorm1.2');
+            if(version === '2') {
+              archive.directory('scorm2', false);
+            }
+              //zfile.addLocalFolder('scorm2');
+            if(version === '3') {
+              archive.directory('scorm3', false);
+            }
+            //zfile.addLocalFolder('scorm3');
+            if(version === '4') {
+              archive.directory('scorm4', false);
+            }
+              //zfile.addLocalFolder('scorm4');
+            outputArchive.on('close', function() {
+              reply.file('temp-' + outputFilename).header('Content-Disposition', 'attachment; filename=' + outputFilename).header('Content-Type', 'application/zip');
+            });
+
+
+            archive.finalize();
+
+            //zfile.toBuffer( function(buffer) {
+            //  reply(buffer).header('Content-Disposition', 'attachment; filename=' + outputFilename).header('Content-Type', 'application/zip');
+            //}, function(failure) {
+            //  reply(boom.badImplementation());
+            //});
           });
         });
       }).catch(function(error) { // Handle errors
