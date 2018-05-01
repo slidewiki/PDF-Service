@@ -13,6 +13,8 @@ const boom = require('boom'), //Boom gives us some predefined http codes and pro
   util = require('util'),
   readFilePromise = util.promisify(fs.readFile),
   path = require('path'),
+  juice = require('juice'),
+  cheerio = require('cheerio'),
   //exiftool = require('node-exiftool'),
   //exiftoolBin = require('dist-exiftool'),
   //ep = new exiftool.ExiftoolProcess(exiftoolBin),
@@ -256,8 +258,10 @@ module.exports = {
     req_path = Microservices.deck.uri + req_path;
     let platform_path = Microservices.platform.uri;
     let styles = '';
+    let divs = '<div class="reveal"><div class="slides">';
     getCss(theme).then((css) => {
       styles = css;
+      // divs = getDivStyleInline(styles);
     });
     //console.log('req_path: ' + req_path);
     getMetadata(request.params.id, function(metadata) {
@@ -282,9 +286,9 @@ module.exports = {
         //request.log(deckTree);
         if (deckTree.theme && theme === '') {
           theme = deckTree.theme;
-          console.log('theme: ' + theme);
+          
         }
-        console.log('theme: ' + theme);
+        
         let slides = [];
         if (deckTree !== '') {
           //console.log('deckTree is non-empty: ' + deckTree.children.length);
@@ -292,13 +296,14 @@ module.exports = {
             let slide = deckTree.children[i];
             //console.log(slide);
             let speakerNotes = slide.speakerNotes ? '<aside class="notes">' + slide.speakerNotes + '</aside>': '';
-            let content = slide.content + speakerNotes ;
-            slides.push('<section key="' + slide.id + '" id="' + slide.id + '">' + content + '</section>');
+            let content = slide.content + speakerNotes;
+
+            slides.push(renderSingleSlide(styles, content, slide.id, false));//'<section key="' + slide.id + '" id="' + slide.id + '">' + content + '</section>');
             //console.log('slide: ' + slides[i]);
 
           }
           if (licensing) {
-            slides.push('<section>' + copyright_slide + '</section>');
+            slides.push(renderSingleSlide(styles, copyright_slide, 'copyright', false));
           }
         } else {
           slides = '<section/>';
@@ -318,7 +323,7 @@ module.exports = {
         }
         if (request.query.fullHTML) {
           revealSlides += '<html>\n' +
-          '<head>\n<style type="text/css">' + styles + '</style>' + 
+          '<head>' + //\n<style type="text/css">' + styles + '</style>' +
           // '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/reveal.css">\n' +
           // '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/theme/' + theme + '.css">\n' +
           pdfFormattingString +
@@ -338,17 +343,15 @@ module.exports = {
           '</style>\n' +
           '</head>\n' +
           '<body>\n'; // height="960" width="700">\n';
-          if (pdfFormatting) {
-            revealSlides += '<script   src="https://code.jquery.com/jquery-3.2.1.min.js"   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="   crossorigin="anonymous"></script>\n';
-          }
+          // if (pdfFormatting) {
+          revealSlides += '<script   src="https://code.jquery.com/jquery-3.2.1.min.js"   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="   crossorigin="anonymous"></script>\n';
+          // }
         }
-        revealSlides += '<div>\n'+
-        '          <div class="reveal" className="reveal" style=' + defaultCSS + '>' +// style=' + defaultCSS + '>\n' +
-        '            <div class="slides" className="slides">\n'; //style="transform: scale(0.59248, 0.59248); transform-origin: left top;"
-        //console.log('revealSlides: ' + revealSlides);
+        revealSlides += '<div>\n'+ getDivStyleInline(styles);
+        // '          <div class="reveal" className="reveal" style=' + defaultCSS + '>' +// style=' + defaultCSS + '>\n' +
+        // '            <div class="slides" className="slides">\n'; //style="transform: scale(0.59248, 0.59248); transform-origin: left top;"
 
         for (let i = 0; i < slides.length; i++) {
-          //console.log('revealSlides: ' + revealSlides);
           revealSlides += '              ' + slides[i] + '\n';
         }
         revealSlides += '            </div>' +
@@ -406,6 +409,29 @@ module.exports = {
         reply(boom.badImplementation());
       });
     });
+  },
+
+  getRevealSlide: function(request, reply){
+    let theme = request.query.theme;
+    // let includeDivs = request.query.includeDivs;
+    let includeDivs = true;
+    let req = Microservices.deck.uri + `/slide/${request.params.id}`;
+    rp.get(req).then((slide) => {
+      slide = JSON.parse(slide);
+      getCss(theme).then((css) => {
+        // let divs = getDivStyleInline(css);
+        slide.revisions[0].content = renderSingleSlide(css, slide.revisions[0].content, request.params.id, true);
+        console.log(`getRevealSlide\n\n\nslide.content\n\n${slide.content}`);
+        reply(slide);
+      }).catch((err) => {
+        console.log(err);
+        reply(boom.badImplementation());
+      });
+    }).catch((err) => {
+      console.log(err);
+      reply(boom.badImplementation());
+    });
+
   },
 
   //Get SCORM version
@@ -612,9 +638,8 @@ module.exports = {
 };
 
 function getCss(theme){
-  // readFilePromise().then(() => {
-  // let css = '';
-  // let paths = [, ].map(readFilePromise);
+  // NOTE: At present, we are reading the CSS from a CSS File.
+  // In future, it will probably be queried from the database (as JSON) and converted from there to CSS
   let promises = [];
   promises.push(readFilePromise(path.resolve(__dirname, 'reveal.js/css/reveal.css')));
   promises.push(readFilePromise(path.resolve(__dirname, `reveal.js/css/theme/${theme}.css`)));
@@ -623,5 +648,30 @@ function getCss(theme){
     console.log('There was an error', err);
   });
 
+}
 
+function renderSingleSlide(css, slideContent, id=0, includeDivs=true){
+  let head = `<!DOCTYPE html><html>`;
+  head += `<head>\n<style type="text/css">${css}</style>\n</head>`;
+  let divs = '<div class="reveal"><div class="slides">';
+  let cls = includeDivs ? ' class="present"' : '';
+  let body = `<body>${divs}<section${cls}" id="${id}">${slideContent}</section></div></div></body>`;
+
+  let html = head + body;
+  console.log(`HTML: ${html}`);
+
+  // html = juice(html);
+  html = juice(html);
+
+  // console.log($('html').text());
+  let $ = cheerio.load(html);
+  if(includeDivs){
+    html = $.html('.reveal');
+    // console.log(html);
+    return html
+  }
+  else{
+    let section = $.html('section');//.attr('id', id).html();
+    return section;
+  }
 }

@@ -107,6 +107,25 @@ module.exports = function(server) {
     }
   });
 
+  server.route({
+    method: 'GET',
+    path: '/exportRevealSlide/{id}',
+    handler: handlers.getRevealSlide,
+    config: {
+      validate: {
+        params: {
+          id: Joi.string()
+        },
+        query: {
+          theme : Joi.string().valid('blood', 'night', 'beige', 'league', 'serif', 'solarized', 'white', 'black', 'moon', 'simple', 'epub'),
+          includeDivs : Joi.boolean().default(true)
+        }
+      },
+      tags: ['api'],
+      description: 'Export the a single slide with the reveal styles applied. Includes the surrounding reveal divs if requested'
+    }
+  });
+
   server.on('tail', function(request) {
     return handlers.getPDFEnd(request);
   });
