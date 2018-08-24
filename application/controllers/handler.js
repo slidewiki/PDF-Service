@@ -307,7 +307,7 @@ module.exports = {
             let slide = deckTree.children[i];
             //console.log(slide);
             let slideTitleAttribute = slide.title ? 'data-menu-item="'+ slide.title + '"' : '';
-            let speakerNotes = slide.speakerNotes ? '<aside class="notes">' + slide.speakerNotes + '</aside>': '';
+            let speakerNotes = slide.speakernotes ? '<aside class="notes">' + slide.speakernotes + '</aside>': '';
             let content = slide.content + speakerNotes ;
             slides.push('<section key="' + slide.id + '" id="' + slide.id + '" ' + slideTitleAttribute + '>' + content + '</section>');
             //console.log('slide: ' + slides[i]);
