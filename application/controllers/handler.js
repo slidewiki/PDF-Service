@@ -306,7 +306,7 @@ module.exports = {
           for (let i = 0; i < deckTree.children.length; i++) {
             let slide = deckTree.children[i];
             //console.log(slide);
-            let speakerNotes = slide.speakerNotes ? '<aside class="notes">' + slide.speakerNotes + '</aside>': '';
+            let speakerNotes = slide.speakernotes ? '<aside class="notes">' + slide.speakernotes + '</aside>': '';
             let content = slide.content + speakerNotes ;
             slides.push('<section key="' + slide.id + '" id="' + slide.id + '">' + content + '</section>');
             //console.log('slide: ' + slides[i]);
