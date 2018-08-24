@@ -306,9 +306,10 @@ module.exports = {
           for (let i = 0; i < deckTree.children.length; i++) {
             let slide = deckTree.children[i];
             //console.log(slide);
+            let slideTitleAttribute = slide.title ? 'data-menu-item="'+ slide.title + '"' : '';
             let speakerNotes = slide.speakerNotes ? '<aside class="notes">' + slide.speakerNotes + '</aside>': '';
             let content = slide.content + speakerNotes ;
-            slides.push('<section key="' + slide.id + '" id="' + slide.id + '">' + content + '</section>');
+            slides.push('<section key="' + slide.id + '" id="' + slide.id + '" ' + slideTitleAttribute + '>' + content + '</section>');
             //console.log('slide: ' + slides[i]);
 
           }
