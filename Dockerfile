@@ -22,7 +22,20 @@ ADD ./application/package.json ./
 RUN npm install --production
 RUN npm install git+https://github.com/athird/epub-gen.git
 
-RUN npm install git+https://github.com/athird/epub-gen.git
+#RUN npm install git+https://github.com/athird/epub-gen.git
+
+RUN npm install git+https://github.com/slidewiki/reveal.js.git
+
+RUN mkdir ./reveal.js
+RUN mkdir ./reveal.js-menu
+RUN cp -r ./node_modules/reveal.js/css ./reveal.js
+RUN cp -r ./node_modules/reveal.js/img ./reveal.js
+RUN cp -r ./node_modules/reveal.js/js ./reveal.js
+RUN cp -r ./node_modules/reveal.js/lib ./reveal.js
+RUN cp -r ./node_modules/reveal.js/plugin ./reveal.js
+RUN cp -r ./node_modules/reveal.js-menu/font-awesome ./reveal.js-menu
+RUN cp -r ./node_modules/reveal.js-menu/menu.* ./reveal.js-menu
+ADD https://code.jquery.com/jquery-3.2.1.min.js ./reveal.js/lib/jquery-3.2.1.min.js
 
 ADD ./application/ ./
 
@@ -30,7 +43,7 @@ ADD ./application/ ./
 #   Configuration   #
 # ----------------- #
 
-EXPOSE 80
+EXPOSE 3000
 
 # ----------- #
 #   Cleanup   #

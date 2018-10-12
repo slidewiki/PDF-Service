@@ -42,7 +42,8 @@
     "dist-exiftool": "10.53.0",
     "node-exiftool": "2.2.0",
     "website-scraper":"^1.2.2",
-    "decktape":"git+https://github.com/athird/decktape.git"
+    "decktape":"git+https://github.com/athird/decktape.git",
+    "reveal.js-menu": "git+https://github.com/slidewiki/reveal.js-menu.git"
   },
   "engines": {
     "node": ">=6.9.0"

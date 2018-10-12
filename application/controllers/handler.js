@@ -111,7 +111,16 @@ module.exports = {
       //console.log(result);
       let filename = 'slidewiki-deck-' + request.params.id + '.zip';
       let folderName = 'exportedOfflineHTML-' + request.params.id;
-
+      let revealThemeFolder = 'reveal.js/css/theme';
+      let revealPrintFolder = 'reveal.js/css/print';
+      // let revealPluginFolder = '/nodeApp/node_modules/reveal.js/plugin';
+      // let revealLibFolder = '/nodeApp/node_modules/reveal.js/lib';
+      let revealMenuFolder = 'reveal.js-menu';
+      fs.ensureDirSync(folderName + '/css/theme');
+      fs.ensureDirSync(folderName + '/css/print');
+      //fs.ensureDirSync(folderName + '/reveal.js-menu');
+      //fs.ensureDirSync(folderName + '/plugin');
+      //fs.ensureDirSync(folderName + '/lib');
       // Sync:
       try {
         fs.copySync(folderName+'/img/cursor_bring_to_front.png', folderName+'/img/cursor_bring_to_front_1.png');
@@ -120,6 +129,11 @@ module.exports = {
         fs.copySync(folderName+'/img/cursor_resize_arrow.png', folderName+'/img/cursor_resize_arrow_1.png');
         fs.copySync(folderName+'/img/cursor_send_to_back.png', folderName+'/img/cursor_send_to_back_1.png');
         fs.copySync(folderName+'/img/logo_full.png', folderName+'/img/logo_full_1.png');
+        fs.copySync(revealThemeFolder, folderName + '/css/theme');
+        fs.copySync(revealPrintFolder, folderName + '/css/print');
+        // fs.copySync(revealPluginFolder, folderName + '/plugin');
+        // fs.copySync(revealLibFolder, folderName + '/lib');
+        //fs.copySync(revealMenuFolder, folderName + '/reveal.js-menu');
         //console.log('success!');
       } catch (err) {
         console.error(err);
@@ -273,7 +287,7 @@ module.exports = {
       req_path += '?' + offset;
     }
     req_path = Microservices.deck.uri + req_path;
-    let platform_path = Microservices.platform.uri;
+    let platform_path = Microservices.pdf.uri;
     //console.log('req_path: ' + req_path);
     getMetadata(request.params.id, function(metadata) {
       //"title": "Copyright and Licensing",
@@ -328,15 +342,16 @@ module.exports = {
         let revealSlides = '';
         let pdfFormattingString;
         if (pdfFormatting) {
-          pdfFormattingString = '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/print/pdf.css">\n';
+          //pdfFormattingString = '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/print/pdf.css">\n';
+          pdfFormattingString = '<link rel="stylesheet" href="' + platform_path + '/reveal.js/css/print/pdf.css">\n';
         } else {
           pdfFormattingString = '';
         }
         if (request.query.fullHTML) {
           revealSlides += '<html>\n' +
           '<head>\n' +
-          '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/reveal.css">\n' +
-          '<link rel="stylesheet" href="' + platform_path + '/custom_modules/reveal.js/css/theme/' + theme + '.css">\n' +
+          '<link rel="stylesheet" href="' + platform_path + '/reveal.js/css/reveal.css">\n' +
+          '<link rel="stylesheet" href="' + platform_path + '/reveal.js/css/theme/' + theme + '.css">\n' +
           pdfFormattingString +
           '<style>\n' +
           'img {\n' +
@@ -354,9 +369,9 @@ module.exports = {
           '</style>\n' +
           '</head>\n' +
           '<body>\n'; // height="960" width="700">\n';
-          if (pdfFormatting) {
-            revealSlides += '<script   src="https://code.jquery.com/jquery-3.2.1.min.js"   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="   crossorigin="anonymous"></script>\n';
-          }
+          //if (pdfFormatting) {
+            revealSlides += '<script src="/reveal.js/lib/jquery-3.2.1.min.js"></script>\n';
+        //  }
         }
         revealSlides += '<div>\n'+
         '          <div class="reveal" className="reveal" style=' + defaultCSS + '>' +// style=' + defaultCSS + '>\n' +
@@ -372,7 +387,50 @@ module.exports = {
           '          <br>' + //style={clear: \'both\'}/>' +
           '        </div>';
         if (request.query.fullHTML) {
-          revealSlides += '<script src="' + platform_path +'/custom_modules/reveal.js/js/reveal.js"></script>' +
+          let revealInitializeString = 'transition: \'none\',' +
+                'backgroundTransition: \'none\',' +
+                'history: true,' +
+                'viewDistance: 2,' +
+                ' dependencies: [' +
+                '    { src: \'' + platform_path + '/reveal.js/plugin/notes/notes.js\', async: true },' +
+                '    { src: \'' + platform_path + '/reveal.js/plugin/zoom-js/zoom.js\', async: true },' +
+                '    { src: \'' + platform_path + '/reveal.js-menu/menu.js\', async: true},' +
+                '    { src: \'' + platform_path + '/reveal.js/plugin/highlight/highlight.js\', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },' +
+                '],' +
+                'keyboard: {' +
+                '    72: null,' +
+                '    78: null' +
+                '},' +
+                'toolbar: {' +
+                '    captureMenu: false, ' +
+                '    deckUrl: [\'/deck\', \'' + Microservices.platform.uri + '/deck/' + request.params.id + '\'],' +
+                '},' +
+                'menu: {' +
+                '    deckUrl: [\'/deck\', \'' + Microservices.platform.uri + '/deck/' + request.params.id + '\'],' +
+                '    speakerNotes: \'' + platform_path + '/reveal.js/plugin/notes/notes.html\',' +
+                '    overview: true,' +
+                '    side: \'left\',' +
+                '    width: \'normal\',' +
+                '    numbers: false,' +
+                '    titleSelector: \'h1, h2, h3, h4, h5, h6\',' +
+                '    useTextContentForMissingTitles: true,' +
+                '    hideMissingTitles: false,' +
+                '    markers: true,' +
+                '    custom: false,' +
+                '    themes: false,' +
+                '    themesPath: \'css/theme/\',' +
+                '    transitions: false,' +
+                '    openButton: true,' +
+                '    openSlideNumber: false,' +
+                '    keyboard: true,' +
+                '    sticky: false,' +
+                '    autoOpen: true,' +
+                '    delayInit: false,' +
+                '    openOnInit: false,' +
+                '    loadIcons: true' +
+                '},';
+          revealSlides += '<script src=\'' + platform_path + '/reveal.js/lib/js/head.min.js\'></script>' +
+          '<script src="' + platform_path +'/reveal.js/js/reveal.js"></script>' +
             '<script>' +
             '    window.onload = function() {' +
             '      var all = document.getElementsByTagName("div");' +
@@ -384,6 +442,71 @@ module.exports = {
             '    };' +
             '</script>' +
             '<script>' +
+            '            //$(\'[style*="absolute"]\').children().attr(\'tabindex\', 0);\n' +
+            '\n' +
+            '            //remove existing tabindices\n' +
+            '            $(\'[style*="absolute"]\').each(function () {\n' +
+            '                let el = $(this);\n' +
+            '                if(el.attr(\'tabindex\') !== 0)\n' +
+            '                    el.attr(\'tabindex\', 0);\n' +
+            '            });\n' +
+            '            //add tabindices to all children in absolute elements\n' +
+            '            $(\'[style*="absolute"]\').each(function () {\n' +
+            '                $(this).children().attr(\'tabindex\', 0);\n' +
+            '                //if($(this).attr(\'tabindex\') !== 0)\n' +
+            '                //{\n' +
+            '                //    $(this).attr(\'tabindex\', 0);\n' +
+            '                //}\n' +
+            '            });\n' +
+            '            //TODO: add hidden element at start of PPTX slide content + to focus on this.\n' +
+            '\n' +
+            '            var reveals = document.getElementsByClassName(\'reveal\');' +
+            '            for (var i=0; i < reveals.length; i++) {' +
+            '               reveals[i].style.display=\'inline\';' +
+            '            }' +
+            'function resize() {\n' +
+            '              let pptxwidth;\n' +
+            '              let pptxheight;\n' +
+            '              if( $(\'.present > .pptx2html\').html() ){\n' +
+            '                  pptxwidth = $(\'.present > .pptx2html\').width();\n' +
+            '                  pptxheight = $(\'.present > .pptx2html\').height();\n' +
+            '              } else {\n' +
+            '\n' +
+            '                  pptxwidth = \'100%\';\n' +
+            '                  pptxheight = \'100%\';\n' +
+            '\n' +
+            '                  //resize non-pptx2html slide content based on current height of window\n' +
+            '                  //reimplemented based on old SlideWiki https://github.com/AKSW/SlideWiki/blob/307e9e87aee08543e46d270fe267aeaa5cdbfe3b/slidewiki/static/js/scale.js\n' +
+            '                  //let presentwidth = $(\'.present\').width();\n' +
+            '                  let presentheight = $(\'.present\').height();\n' +
+            '                  //console.log(\'resize non-pptx2html slide content - presentwidth: \' + presentwidth + \' and height: \' + presentheight);\n' +
+            '                  //let screenwidth = document.getElementsByClassName(\'reveal\')[0].offsetWidth * 0.85;\n' +
+            '                  //let screenwidth = document.getElementsByClassName(\'reveal\')[0].offsetWidth * 0.85;\n' +
+            '                  //let screenheight = (document.getElementsByClassName(\'reveal\')[0].offsetHeight * 0.85);\n' +
+            '                  let screenheight = document.getElementsByClassName(\'reveal\')[0].offsetHeight;\n' +
+            '                  //console.log(\'resize non-pptx2html slide content - screenwidth: \' + screenwidth + \' and height: \' + screenheight);\n' +
+            '                  let heightratio = screenheight / presentheight ;\n' +
+            '                  //let widthratio = screenwidth / presentwidth;\n' +
+            '                  let scaleratio = 1;\n' +
+            '                  //if (widthratio < heightratio){scaleratio = widthratio;} else {scaleratio = heightratio;}\n' +
+            '                  if (presentheight > screenheight){scaleratio = heightratio;}\n' +
+            '                  //console.log(\'resize non-pptx2html slide content - widthratio: \' + widthratio + \' and heightratioratio: \' + heightratio);\n' +
+            '                  //console.log(\'resize non-pptx2html slide content - scaleratio: \' + scaleratio);\n' +
+            '\n' +
+            '                  $(\'.present\').css({\'transform\': \'\', \'transform-origin\': \'\'});\n' +
+            '                  $(\'.present\').css({\'transform\': \'scale(\'+scaleratio+\',\'+scaleratio+\')\', \'transform-origin\': \'center top\'});\n' +
+            '\n' +
+            '              }\n' +
+            '              // event.previousSlide, event.currentSlide, event.indexh, event.indexv\n' +
+            '              //let state = Reveal.getState();\n' +
+            '              //console.log(\'state: \' + JSON.stringify(state));\n' +
+            '              //console.log(\'slidechanged dimensions: \' + pptxheight + \' by \' + pptxwidth);\n' +
+            '              Reveal.configure({\n' +
+            '                  width: pptxwidth,\n' +
+            '                  height: pptxheight,\n' +
+            '                  slideNumber: true\n' +
+            '              });\n' +
+            '            }\n' +
             '    var pptxwidth = 0;' +
             '    var pptxheight = 0;' +
             '    var elements = document.getElementsByClassName(\'pptx2html\');' +
@@ -401,14 +524,46 @@ module.exports = {
             '     Reveal.initialize({' +
             '       width: pptxwidth,' +
             '       height: pptxheight,' +
+                    revealInitializeString +
             '     });' +
             '    } else {' +
           //  '       Reveal.initialize();\n' +
             '     Reveal.initialize({' +
             '       width: \'100%\',' +
             '       height: \'100%\',' +
+                    revealInitializeString +
             '     });' +
             '    }' +
+            '            Reveal.addEventListener( \'ready\', ( event ) => {\n' +
+            '                //$(\'.accessibilityWrapper\').attr(\'tabindex\', \'\');\n' +
+            '                //$(\'.present > .accessibilityWrapper > .pptx2html div:first-child\').focus();\n' +
+            '                //console.log($(\'.present > .accessibilityWrapper > .pptx2html div:first\').html());\n' +
+            '            	// event.currentSlide, event.indexh, event.indexv\n' +
+            '                resize();\n' +
+            '            } );\n' +
+            '\n' +
+            '            Reveal.addEventListener( \'slidechanged\', ( event ) => {\n' +
+            '                //console.log(\'slidechanged: \' + $(\'.present > .accessibilityWrapper > .pptx2html div:first\').html());\n' +
+            '                //$(\'.present > .accessibilityWrapper > .pptx2html div:first-child\').focus();\n' +
+            '                //console.log(\'resize non-pptx2html slide content - presentwidth: \' + presentwidth + \' and height: \' + presentheight);\n' +
+            '                resize();\n' +
+            '            } );\n' +
+            '\n' +
+            '            //$(\'.present > .pptx2html div:first\').focus();\n' +
+            '\n' +
+            '        //listen to resize event and resize.\n' +
+            '        /*ReactDOM.findDOMNode(this.refs.container).addEventListener(\'resize\', (evt) =>\n' +
+            '            {\n' +
+            '            //console.log(\'resize\');\n' +
+            '            resize();\n' +
+            '        });*/\n' +
+            '            window.addEventListener(\'resize\', resize());\n' +
+            '        \n' +
+            '        //$(\'.present >  .pptx2html div:first\').focus();\n' +
+            '\n' +
+            '        // update mathjax rendering\n' +
+            '        // add to the mathjax rendering queue the command to type-set the slide content\n' +
+            '        MathJax.Hub.Queue([\'Typeset\',MathJax.Hub,\'slides\']);\n';
             '</script>' +
             '</body>' +
             '</html>';

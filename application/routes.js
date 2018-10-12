@@ -98,13 +98,33 @@ module.exports = function(server) {
           offset: Joi.string().optional(),
           fullHTML: Joi.string().optional(),
           pdfFormatting: Joi.string().optional(),
-          theme : Joi.string().optional().valid('blood', 'night', 'beige', 'league', 'serif', 'solarized', 'white', 'black', 'moon', 'simple', 'epub'),
-          licensing: Joi.string().optional()
+          theme : Joi.string().optional().valid('blood', 'night', 'beige', 'league', 'serif', 'solarized', 'white', 'black', 'moon', 'simple', 'epub', 'sky','odimadrid','oeg','default', 'openuniversity'),
+	        licensing: Joi.string().optional()
         }
       },
       tags: ['api'],
       description: 'Export the given deck in Reveal.js format'
     }
+  });
+
+  server.route({
+      method: 'GET',
+      path: '/reveal.js/{param*}',
+      handler: {
+          directory: {
+              path: 'reveal.js'
+          }
+      }
+  });
+
+  server.route({
+      method: 'GET',
+      path: '/reveal.js-menu/{param*}',
+      handler: {
+          directory: {
+              path: 'reveal.js-menu'
+          }
+      }
   });
 
   server.on('tail', function(request) {
