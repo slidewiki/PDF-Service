@@ -108,23 +108,23 @@ module.exports = function(server) {
   });
 
   server.route({
-      method: 'GET',
-      path: '/reveal.js/{param*}',
-      handler: {
-          directory: {
-              path: 'reveal.js'
-          }
+    method: 'GET',
+    path: '/reveal.js/{param*}',
+    handler: {
+      directory: {
+        path: 'reveal.js'
       }
+    }
   });
 
   server.route({
-      method: 'GET',
-      path: '/reveal.js-menu/{param*}',
-      handler: {
-          directory: {
-              path: 'reveal.js-menu'
-          }
+    method: 'GET',
+    path: '/reveal.js-menu/{param*}',
+    handler: {
+      directory: {
+        path: 'reveal.js-menu'
       }
+    }
   });
 
   server.on('tail', function(request) {

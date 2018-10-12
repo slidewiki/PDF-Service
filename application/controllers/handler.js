@@ -370,7 +370,7 @@ module.exports = {
           '</head>\n' +
           '<body>\n'; // height="960" width="700">\n';
           //if (pdfFormatting) {
-            revealSlides += '<script src="/reveal.js/lib/jquery-3.2.1.min.js"></script>\n';
+          revealSlides += '<script src="/reveal.js/lib/jquery-3.2.1.min.js"></script>\n';
         //  }
         }
         revealSlides += '<div>\n'+
@@ -563,7 +563,7 @@ module.exports = {
             '\n' +
             '        // update mathjax rendering\n' +
             '        // add to the mathjax rendering queue the command to type-set the slide content\n' +
-            '        MathJax.Hub.Queue([\'Typeset\',MathJax.Hub,\'slides\']);\n';
+            '        MathJax.Hub.Queue([\'Typeset\',MathJax.Hub,\'slides\']);\n' +
             '</script>' +
             '</body>' +
             '</html>';
