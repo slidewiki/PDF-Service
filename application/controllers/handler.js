@@ -21,50 +21,55 @@ const boom = require('boom'), //Boom gives us some predefined http codes and pro
   scraper = require('website-scraper');//,
   //Reveal = require('reveal');
 
-let getMetadata = function(id, callback) {
+let getMetadata = function(id) {
   let metadata_req_url = Microservices.deck.uri + '/deck/' + id;
-  rp(metadata_req_url).then(function(body) {
+  return rp(metadata_req_url).then((body) => {
     let deck_metadata = JSON.parse(body);
     let user = deck_metadata.user;
     let title = 'SlideWiki Deck ' + id;
     if (deck_metadata.revisions && deck_metadata.revisions[0] && deck_metadata.revisions[0].title) {
       title = deck_metadata.revisions[0].title;
+    } else {
+      title = deck_metadata.title;
     }
     console.log(JSON.stringify(body));
-    let contributors = [parseInt(user)];
-    for ( let i = 0; i < deck_metadata.contributors.length; i++) {
-      contributors.push(parseInt(deck_metadata.contributors[i].user));
-      console.log(deck_metadata.contributors[i].user);
-      console.log(contributors);
-    }
-    let usernames_req_url = Microservices.user.uri + '/users';
-    let users_options = {
-      method: 'POST',
-      uri: usernames_req_url,
-      body: contributors,
-      followAllRedirects: true,
-      json: true
-    };
-    console.log(JSON.stringify(users_options));
-    rp(users_options).then(function(parsedBody) {
-      let results = {};
-      results.title = title;
-      results.license = deck_metadata.license;
-      let usernames = [];
-      for (let i = 0 ; i < parsedBody.length; i++) {//user_entry in parsedBody) {
-        let user_entry = parsedBody[i];
-        if (user_entry._id === user) {
-          results.author = user_entry.username;
-        } else {
-          usernames.push(user_entry.username);
+
+    // new contributors API
+    return rp(Microservices.deck.uri + '/deck/' + id + '/contributors', { json: true}).then((contributors) => {
+      // console.log(contributors);
+      contributors = contributors.map((item) => item.id);
+
+      let usernames_req_url = Microservices.user.uri + '/users';
+      let users_options = {
+        method: 'POST',
+        uri: usernames_req_url,
+        body: contributors,
+        followAllRedirects: true,
+        json: true
+      };
+      console.log(JSON.stringify(users_options));
+      return rp(users_options).then((parsedBody) => {
+        let results = {};
+        results.title = title;
+        results.license = deck_metadata.license;
+        let usernames = [];
+        for (let i = 0 ; i < parsedBody.length; i++) {//user_entry in parsedBody) {
+          let user_entry = parsedBody[i];
+          if (user_entry._id === user) {
+            results.author = user_entry.username;
+          } else {
+            usernames.push(user_entry.username);
+          }
         }
-      }
-      if (deck_metadata.revisions.theme) {
-        results.theme = deck_metadata.revisions.theme;
-      }
-      results.contributors = usernames;
-      console.log(JSON.stringify(results));
-      callback(results);
+        if (deck_metadata.revisions && deck_metadata.revisions[0] && deck_metadata.revisions[0].theme) {
+          results.theme = deck_metadata.revisions[0].theme;
+        } else {
+          results.theme = deck_metadata.theme;
+        }
+        results.contributors = usernames;
+        console.log(JSON.stringify(results));
+        return results;
+      });
     });
   });
 };
@@ -160,7 +165,7 @@ module.exports = {
   },
 
   getEPub: function(request, reply) {
-    getMetadata(request.params.id, function(metadata) {
+    getMetadata(request.params.id).then((metadata) => {
 
       let copyright_slide = '<div class=\"pptx2html\" id=\"87705\" style=\"position: relative; width: 960px; height: 720px;\"><div _id=\"3\" _idx=\"1\" _name=\"Content Placeholder 2\" _type=\"body\" class=\"block content v-up context-menu-disabled\" id=\"65624\" style=\"position: absolute; top: 58.90356699625651px; left: 69.00000746532153px; width: 828px; height: 456.833px; z-index: 23520; cursor: auto;\" tabindex=\"0\"><p style=\"text-align: center;\" id=\"93898\">Author: SLIDEWIKI_AUTHOR</p><p style=\"text-align: center;\" id=\"10202\">Contributors:&nbsp;SLIDEWIKI_CONTRIBUTORS</p><p style=\"text-align: center;\" id=\"38083\">Licenced under the Creative Commons Attribution ShareAlike licence (<a href=\"http://creativecommons.org/licenses/by-sa/4.0/\" id=\"62598\">CC-BY-SA</a>)</p><p style=\"text-align: center;\" id=\"96218\">This deck was created using&nbsp;<a href=\"http://slidewiki.org\" id=\"40974\">SlideWiki</a>.</p><div class=\"h-left\" id=\"63022\">&nbsp;</div></div></div>';
       let contributor_string = '';
@@ -275,15 +280,18 @@ module.exports = {
     req_path = Microservices.deck.uri + req_path;
     let platform_path = Microservices.platform.uri;
     //console.log('req_path: ' + req_path);
-    getMetadata(request.params.id, function(metadata) {
+    getMetadata(request.params.id).then((metadata) => {
       //"title": "Copyright and Licensing",
-      let copyright_slide = '<div class=\"pptx2html\" id=\"87705\" style=\"position: relative; width: 960px; height: 720px;\"><div _id=\"3\" _idx=\"1\" _name=\"Content Placeholder 2\" _type=\"body\" class=\"block content v-up context-menu-disabled\" id=\"65624\" style=\"position: absolute; top: 58.90356699625651px; left: 69.00000746532153px; width: 828px; height: 456.833px; z-index: 23520; cursor: auto;\" tabindex=\"0\"><p style=\"text-align: center;\" id=\"93898\">Author: SLIDEWIKI_AUTHOR</p><p style=\"text-align: center;\" id=\"10202\">Contributors:&nbsp;SLIDEWIKI_CONTRIBUTORS</p><p style=\"text-align: center;\" id=\"38083\">Licenced under the Creative Commons Attribution ShareAlike licence (<a href=\"http://creativecommons.org/licenses/by-sa/4.0/\" id=\"62598\">CC-BY-SA</a>)</p><p style=\"text-align: center;\" id=\"96218\">This deck was created using&nbsp;<a href=\"http://slidewiki.org\" id=\"40974\">SlideWiki</a>.</p><div class=\"h-left\" id=\"63022\">&nbsp;</div></div></div>';
+      let copyright_slide = '<div class=\"pptx2html\" id=\"87705\" style=\"position: relative; width: 960px; height: 720px;\"><div _id=\"3\" _idx=\"1\" _name=\"Content Placeholder 2\" _type=\"body\" class=\"block content v-up context-menu-disabled\" id=\"65624\" style=\"position: absolute; top: 58.90356699625651px; left: 69.00000746532153px; width: 828px; height: 456.833px; z-index: 23520; cursor: auto;\" tabindex=\"0\"><p style=\"text-align: center;\" id=\"93898\">Author: SLIDEWIKI_AUTHOR</p><p style=\"text-align: center;\" id=\"10202\">SLIDEWIKI_CONTRIBUTORS</p><p style=\"text-align: center;\" id=\"38083\">Licenced under the Creative Commons Attribution ShareAlike licence (<a href=\"http://creativecommons.org/licenses/by-sa/4.0/\" id=\"62598\">CC-BY-SA</a>)</p><p style=\"text-align: center;\" id=\"96218\">This deck was created using&nbsp;<a href=\"http://slidewiki.org\" id=\"40974\">SlideWiki</a>.</p><div class=\"h-left\" id=\"63022\">&nbsp;</div></div></div>';
       let contributor_string = '';
       for (let i = 0; i < metadata.contributors.length; i++) {
         contributor_string += metadata.contributors[i];
         if (i < metadata.contributors.length - 1) {
           contributor_string += ',';
         }
+      }
+      if (contributor_string) {
+        contributor_string = 'Contributors:&nbsp;' + contributor_string;
       }
       copyright_slide = copyright_slide.replace('SLIDEWIKI_CONTRIBUTORS', contributor_string).replace('SLIDEWIKI_AUTHOR', metadata.author);
 
@@ -459,10 +467,14 @@ module.exports = {
         let description = deck_metadata.description;
         let revisions = deck_metadata.revisions;
         let title = '';
-        for (let i = 0; i < revisions.length; i++) {
-          if (revisions[i].id === revision_count) {
-            title = revisions[i].title;
+        if (revisions) {
+          for (let i = 0; i < revisions.length; i++) {
+            if (revisions[i].id === revision_count) {
+              title = revisions[i].title;
+            }
           }
+        } else {
+          title = deck_metadata.title;
         }
         let presentation_uri = 'index.html';
           //template = template.replace(/SLIDEWIKI_PRESENTATION_URL/g, presentation_uri).replace(/SLIDEWIKI_TITLE/g, title).replace(/SLIDEWIKI_DESCRIPTION/g, description);
@@ -600,7 +612,7 @@ module.exports = {
     decktape.on('close', (code) => {
       reply.file(filename).header('Content-Disposition', 'attachment; filename=' + outputFilename).header('Content-Type', 'application/pdf');
       //console.log('FILENAME: ' + filename);
-      /*getMetadata(id, function(metadata) {
+      /*getMetadata(id).then((metadata) => {
         let contributor_string = '';
         for (let i = 0; i < metadata.contributors.length; i++) {
           contributor_string += metadata.contributors[i];
