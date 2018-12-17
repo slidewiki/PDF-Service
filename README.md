@@ -11,4 +11,4 @@ This repository contains a NodeJS based Microservice of the Slidewiki 2.0 projec
 
 ### Install NodeJS ###
 ---
-Please visit the wiki at [**Install NodeJS**](https://github.com/slidewiki/microservice-template/wiki/Install-NodeJS).
+Please visit the wiki at [**Install NodeJS**](https://github.com/slidewiki/microservice-template/wiki/Install-NodeJS). 
