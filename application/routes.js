@@ -22,7 +22,8 @@ module.exports = function(server) {
           command : Joi.string().valid('automatic', 'bespoke', 'csss', 'deck', 'dzslides', 'flowtime', 'generic', 'impress', 'remark', 'reveal', 'shower', 'slide').description('Decktape slide format plugin'),
           size : Joi.string().regex(/^[0-9]+x[0-9]+$/).description('Resolution for exported slides'),
           slides : Joi.string().regex(/^[0-9]+(?:-[0-9]+)?(?:,[0-9]+(?:-[0-9]+)?)*$/).description('Selection of slides to export. Note that slides are specified by position within the deck, not by SlideWiki slide id.'),
-          pdf : Joi.string().regex(/^[a-zA-Z0-9_\-,]+\.pdf$/).description('Name of exported file')
+          pdf : Joi.string().regex(/^[a-zA-Z0-9_\-,]+\.pdf$/).description('Name of exported file'),
+          language: Joi.string().optional()
         }
       },
       tags: ['api'],
@@ -40,7 +41,8 @@ module.exports = function(server) {
           id : Joi.string().regex(/^[0-9]+(-[0-9]+)?$/).required().description('SlideWiki deck id')
         },
         query: {
-          theme : Joi.string().optional().valid('blood', 'night', 'beige', 'league', 'serif', 'solarized', 'white', 'black', 'moon', 'simple', 'epub')
+          theme : Joi.string().optional().valid('blood', 'night', 'beige', 'league', 'serif', 'solarized', 'white', 'black', 'moon', 'simple', 'epub'),
+          language: Joi.string().optional()
         }
       },
       tags: ['api'],
@@ -56,6 +58,9 @@ module.exports = function(server) {
       validate: {
         params: {
           id : Joi.string().regex(/^[0-9]+(-[0-9]+)?$/).required().description('SlideWiki deck id')
+        },
+        query: {
+          language: Joi.string().optional()
         }
       },
       tags: ['api'],
@@ -74,7 +79,8 @@ module.exports = function(server) {
           id : Joi.string().regex(/^[0-9]+(-[0-9]+)?$/).required().description('SlideWiki deck id')
         },
         query: {
-          version : Joi.string().valid('1.2', '2', '3', '4').required().description('Scorm Version')
+          version : Joi.string().valid('1.2', '2', '3', '4').required().description('Scorm Version'),
+          language: Joi.string().optional()
         }
       },
       tags: ['api'],
@@ -99,7 +105,8 @@ module.exports = function(server) {
           fullHTML: Joi.string().optional(),
           pdfFormatting: Joi.string().optional(),
           theme : Joi.string().optional().valid('blood', 'night', 'beige', 'league', 'serif', 'solarized', 'white', 'black', 'moon', 'simple', 'epub'),
-          licensing: Joi.string().optional()
+          licensing: Joi.string().optional(),
+          language: Joi.string().optional()
         }
       },
       tags: ['api'],

@@ -21,7 +21,7 @@ const boom = require('boom'), //Boom gives us some predefined http codes and pro
   scraper = require('website-scraper');//,
   //Reveal = require('reveal');
 
-let getMetadata = function(id) {
+let getMetadata = function(id, language) {
   let metadata_req_url = Microservices.deck.uri + '/deck/' + id;
   return rp(metadata_req_url).then((body) => {
     let deck_metadata = JSON.parse(body);
@@ -77,7 +77,11 @@ let getMetadata = function(id) {
 module.exports = {
 
   getOfflineHTML: function(request, reply) {
-    let req_path = '/exportReveal/' + request.params.id + '?fullHTML=true&licensing=true';
+    let language = '';
+    if (request.query) {
+      language = request.query.language ? request.query.language : '';
+    }
+    let req_path = '/exportReveal/' + request.params.id + '?fullHTML=true&licensing=true' + ( language !== '' ? '&language=' + language : '');
     if (request.query.theme) {
       let theme = request.query.theme;
       req_path = req_path + '&theme=' + theme;
@@ -165,7 +169,11 @@ module.exports = {
   },
 
   getEPub: function(request, reply) {
-    getMetadata(request.params.id).then((metadata) => {
+    let language = '';
+    if (request.query) {
+      language = request.query.language ? request.query.language : '';
+    }
+    getMetadata(request.params.id, language).then((metadata) => {
 
       let copyright_slide = '<div class=\"pptx2html\" id=\"87705\" style=\"position: relative; width: 960px; height: 720px;\"><div _id=\"3\" _idx=\"1\" _name=\"Content Placeholder 2\" _type=\"body\" class=\"block content v-up context-menu-disabled\" id=\"65624\" style=\"position: absolute; top: 58.90356699625651px; left: 69.00000746532153px; width: 828px; height: 456.833px; z-index: 23520; cursor: auto;\" tabindex=\"0\"><p style=\"text-align: center;\" id=\"93898\">Author: SLIDEWIKI_AUTHOR</p><p style=\"text-align: center;\" id=\"10202\">Contributors:&nbsp;SLIDEWIKI_CONTRIBUTORS</p><p style=\"text-align: center;\" id=\"38083\">Licenced under the Creative Commons Attribution ShareAlike licence (<a href=\"http://creativecommons.org/licenses/by-sa/4.0/\" id=\"62598\">CC-BY-SA</a>)</p><p style=\"text-align: center;\" id=\"96218\">This deck was created using&nbsp;<a href=\"http://slidewiki.org\" id=\"40974\">SlideWiki</a>.</p><div class=\"h-left\" id=\"63022\">&nbsp;</div></div></div>';
       let contributor_string = '';
@@ -188,7 +196,7 @@ module.exports = {
         }
       }
 
-      let req_path = '/deck/' + request.params.id + '/slides';
+      let req_path = '/deck/' + request.params.id + '/slides' + (language !== '' ? '?language=' + language : '');
       req_path = Microservices.deck.uri + req_path;
 
       rp(req_path).then(function(body) {
@@ -270,6 +278,8 @@ module.exports = {
     let theme = request.query.theme ? request.query.theme : 'default';
     let licensing = request.query.licensing ? request.query.licensing : 'false';
     let pdfFormatting = request.query.pdfFormatting ? true : false;
+    let language = request.query.language ? request.query.language : '';
+
     if (limit !== '' && offset !== '') {
       req_path += '?' + limit + '&' + offset;
     } else if (limit !== '') {
@@ -277,10 +287,17 @@ module.exports = {
     } else if (offset !== '') {
       req_path += '?' + offset;
     }
+
+    if (req_path.indexOf('?') !== -1) {
+      req_path += (language !== '' ? '&language=' + language : '');
+    } else {
+      req_path += (language !== '' ? '?language=' + language : '');
+    }
+
     req_path = Microservices.deck.uri + req_path;
     let platform_path = Microservices.platform.uri;
     //console.log('req_path: ' + req_path);
-    getMetadata(request.params.id).then((metadata) => {
+    getMetadata(request.params.id, language).then((metadata) => {
       //"title": "Copyright and Licensing",
       let copyright_slide = '<div class=\"pptx2html\" id=\"87705\" style=\"position: relative; width: 960px; height: 720px;\"><div _id=\"3\" _idx=\"1\" _name=\"Content Placeholder 2\" _type=\"body\" class=\"block content v-up context-menu-disabled\" id=\"65624\" style=\"position: absolute; top: 58.90356699625651px; left: 69.00000746532153px; width: 828px; height: 456.833px; z-index: 23520; cursor: auto;\" tabindex=\"0\"><p style=\"text-align: center;\" id=\"93898\">Author: SLIDEWIKI_AUTHOR</p><p style=\"text-align: center;\" id=\"10202\">SLIDEWIKI_CONTRIBUTORS</p><p style=\"text-align: center;\" id=\"38083\">Licenced under the Creative Commons Attribution ShareAlike licence (<a href=\"http://creativecommons.org/licenses/by-sa/4.0/\" id=\"62598\">CC-BY-SA</a>)</p><p style=\"text-align: center;\" id=\"96218\">This deck was created using&nbsp;<a href=\"http://slidewiki.org\" id=\"40974\">SlideWiki</a>.</p><div class=\"h-left\" id=\"63022\">&nbsp;</div></div></div>';
       let contributor_string = '';
@@ -437,10 +454,12 @@ module.exports = {
     let offline = false;
     let format = 'xml';
     let version = '1.2';
+    let language = '';
     if (request.query) {
       offline = request.query.offline ? request.query.offline : false;
       format = request.query.format ? request.query.format : 'xml';
       version = request.query.version ? request.query.version : '1.2';
+      language = request.query.language ? request.query.language : '';
     }
     let id = request.params.id;
     let template = '';
@@ -461,7 +480,7 @@ module.exports = {
     let req_url = Microservices.deck.uri + '/deck/' + id + '/revisionCount';
     rp(req_url).then(function(body) {
       let revision_count=body;
-      let req_url = Microservices.deck.uri + '/deck/' + id;
+      let req_url = Microservices.deck.uri + '/deck/' + id + (language !== '' ? '?language=' + language : '');
       rp(req_url).then(function(body) {
         let deck_metadata = JSON.parse(body);
         let description = deck_metadata.description;
@@ -483,7 +502,7 @@ module.exports = {
         });
 
         let outputFilename = 'slidewiki-scorm-deck-' + id + '.zip';
-        let zipURI = Microservices.pdf.uri + '/exportOfflineHTML/' + id;
+        let zipURI = Microservices.pdf.uri + '/exportOfflineHTML/' + id + (language !== '' ? '?language=' + language : '');
         let file = fs.createWriteStream(outputFilename);
         let zipReq = rp(zipURI).on('error', function (err) {
           fs.unlink(outputFilename); // Delete the file async. (But we don't check the result)
@@ -579,7 +598,8 @@ module.exports = {
   getPDF: function(request, reply) {
     let id = request.params.id;
     let url = Microservices.pdf.uri + '/exportReveal/' + id + '?fullHTML=true&pdfFormatting=true';
-
+    let language = request.query.language ? request.query.language : '';
+    url += (language !== '' ? '&language=' + language : '');
     //let md5sum = crypto.createHash('md5');
     //md5sum.update(url);
     let filename = 'slidewiki-deck-' + id + '.pdf';//md5sum.digest('base64') + '.pdf';
